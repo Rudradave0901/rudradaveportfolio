@@ -5,7 +5,7 @@ import { protect, authorize } from "../middleweres/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", protect, getBannerData);
+router.get("/", getBannerData);
 router.post("/",
     protect,
     authorize("admin"),

@@ -6,7 +6,7 @@ const router = express.Router();
 
 
 router.post("/", protect, authorize("admin"), createAboutData);
-router.get("/", protect, getAboutData);
+router.get("/", getAboutData);
 router.put("/", protect, authorize("admin"), updateAboutData);
 router.delete("/", protect, authorize("admin"), deleteAboutData)
 

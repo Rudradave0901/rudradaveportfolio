@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import useEduExp from '../../hooks/useEduExp';
+import { useAuth } from '../../context/AuthContext';
 
 const ExpEducation = () => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin';
     const { eduExpData, loading, error, addEduExp, editEduExp, removeEduExp } = useEduExp();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,6 +34,7 @@ const ExpEducation = () => {
     };
 
     const openAddModal = (type) => {
+        if (!isAdmin) return;
         setModalType(type);
         setIsEditMode(false);
         resetForm();
@@ -38,6 +42,7 @@ const ExpEducation = () => {
     };
 
     const openEditModal = (type, index, item, docId) => {
+        if (!isAdmin) return;
         setModalType(type);
         setIsEditMode(true);
         setCurrentIndex(index);
@@ -55,6 +60,7 @@ const ExpEducation = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!isAdmin) return;
 
         const itemData = {
             [modalType === 'education' ? 'courseName' : 'designation']: formData.title,
@@ -91,6 +97,7 @@ const ExpEducation = () => {
     };
 
     const handleDelete = async (type, index, docId) => {
+        if (!isAdmin) return;
         if (!window.confirm("Are you sure you want to delete this milestone?")) return;
 
         const doc = eduExpData.find(d => d._id === docId);
@@ -110,24 +117,33 @@ const ExpEducation = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     {/* Education */}
                     <div>
-                        <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                            <i className="fas fa-book-reader text-cyan-500"></i> Learning Journey
-                        </h3>
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-2xl font-bold flex items-center gap-3">
+                                <i className="fas fa-book-reader text-cyan-500"></i> Learning Journey
+                            </h3>
+                            {!isAdmin && (
+                                <span className="px-3 py-1 bg-zinc-800 text-zinc-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-zinc-700">Read Only</span>
+                            )}
+                        </div>
                         <div className="space-y-6">
-                            <button
-                                onClick={() => openAddModal('education')}
-                                className="w-full card add-new-card min-h-[100px] p-6 mb-6 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 transition-all"
-                            >
-                                <i className="fas fa-plus mb-2 text-zinc-500"></i>
-                                <p className="text-sm text-zinc-500 font-medium">Add Education Milestone</p>
-                            </button>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => openAddModal('education')}
+                                    className="w-full card add-new-card min-h-[100px] p-6 mb-6 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 transition-all"
+                                >
+                                    <i className="fas fa-plus mb-2 text-zinc-500"></i>
+                                    <p className="text-sm text-zinc-500 font-medium">Add Education Milestone</p>
+                                </button>
+                            )}
 
                             {eduExpData.map(doc => doc.education.map((edu, idx) => (
                                 <div key={`${doc._id}-edu-${idx}`} className="card p-6 border-l-4 border-l-cyan-500 relative group bg-zinc-900/50 hover:bg-zinc-900 transition-all rounded-xl border border-zinc-800">
-                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => openEditModal('education', idx, edu, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
-                                        <button onClick={() => handleDelete('education', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
-                                    </div>
+                                    {isAdmin && (
+                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => openEditModal('education', idx, edu, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
+                                            <button onClick={() => handleDelete('education', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between mb-4 pr-12">
                                         <div>
                                             <h4 className="font-bold text-lg text-white">{edu.courseName}</h4>
@@ -150,24 +166,33 @@ const ExpEducation = () => {
 
                     {/* Experience */}
                     <div>
-                        <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                            <i className="fas fa-user-tie text-cyan-500"></i> Professional Background
-                        </h3>
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-2xl font-bold flex items-center gap-3">
+                                <i className="fas fa-user-tie text-cyan-500"></i> Professional Background
+                            </h3>
+                            {!isAdmin && (
+                                <span className="px-3 py-1 bg-zinc-800 text-zinc-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-zinc-700">Read Only</span>
+                            )}
+                        </div>
                         <div className="space-y-6">
-                            <button
-                                onClick={() => openAddModal('experince')}
-                                className="w-full card add-new-card min-h-[100px] p-6 mb-6 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 transition-all"
-                            >
-                                <i className="fas fa-plus mb-2 text-zinc-500"></i>
-                                <p className="text-sm text-zinc-500 font-medium">Add Job Experience</p>
-                            </button>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => openAddModal('experince')}
+                                    className="w-full card add-new-card min-h-[100px] p-6 mb-6 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 transition-all"
+                                >
+                                    <i className="fas fa-plus mb-2 text-zinc-500"></i>
+                                    <p className="text-sm text-zinc-500 font-medium">Add Job Experience</p>
+                                </button>
+                            )}
 
                             {eduExpData.map(doc => doc.experince.map((exp, idx) => (
                                 <div key={`${doc._id}-exp-${idx}`} className="card p-6 border-l-4 border-l-cyan-500 relative group bg-zinc-900/50 hover:bg-zinc-900 transition-all rounded-xl border border-zinc-800">
-                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => openEditModal('experince', idx, exp, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
-                                        <button onClick={() => handleDelete('experince', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
-                                    </div>
+                                    {isAdmin && (
+                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => openEditModal('experince', idx, exp, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
+                                            <button onClick={() => handleDelete('experince', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between mb-4 pr-12">
                                         <div>
                                             <h4 className="font-bold text-lg text-white">{exp.designation}</h4>

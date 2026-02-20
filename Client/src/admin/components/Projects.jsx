@@ -1,9 +1,12 @@
 import React, { useState, useRef } from "react";
 import useProjects from "../../hooks/useProjects";
+import { useAuth } from "../../context/AuthContext";
 
 const BASE_URL = "http://localhost:4000";
 
 const Projects = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const {
     projects,
     loading,
@@ -48,6 +51,7 @@ const Projects = () => {
   };
 
   const openAddModal = () => {
+    if (!isAdmin) return;
     setIsEditMode(false);
     setCurrentProjectId(null);
     resetForm();
@@ -55,6 +59,7 @@ const Projects = () => {
   };
 
   const openEditModal = (project) => {
+    if (!isAdmin) return;
     setIsEditMode(true);
     setCurrentProjectId(project._id);
     setFormData({
@@ -73,6 +78,7 @@ const Projects = () => {
   };
 
   const handleImageChange = (e) => {
+    if (!isAdmin) return;
     const file = e.target.files[0];
     if (file) {
       setFormData({ ...formData, projectImage: file });
@@ -85,11 +91,13 @@ const Projects = () => {
   };
 
   const handleInputChange = (e) => {
+    if (!isAdmin) return;
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleStackChange = (category, value) => {
+    if (!isAdmin) return;
     const items = value.split(", ").map((t) => t.trim()).filter(Boolean);
     setFormData((prev) => ({
       ...prev,
@@ -102,6 +110,7 @@ const Projects = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isAdmin) return;
 
     const data = new FormData();
     data.append("projectName", formData.projectName);
@@ -125,6 +134,7 @@ const Projects = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!isAdmin) return;
     if (window.confirm("Are you sure you want to delete this project?")) {
       await removeProject(id);
     }
@@ -134,21 +144,31 @@ const Projects = () => {
     <section id="section-projects" className="content-section py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-          <div>
-            <h3 className="text-3xl font-extrabold text-white tracking-tight">
-              Portfolio Projects
-            </h3>
-            <p className="mt-2 text-zinc-400">
-              Showcase and manage your best work.
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h3 className="text-3xl font-extrabold text-white tracking-tight">
+                Portfolio Projects
+              </h3>
+              <p className="mt-2 text-zinc-400">
+                Showcase and manage your best work.
+              </p>
+            </div>
+            {!isAdmin && (
+              <div className="px-4 py-1.5 bg-zinc-800 text-zinc-400 text-xs font-bold uppercase tracking-widest rounded-full border border-zinc-700">
+                <i className="fas fa-eye mr-2"></i>
+                Read Only
+              </div>
+            )}
           </div>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(14,165,233,0.3)]"
-          >
-            <i className="fas fa-plus mr-2 text-xs"></i>
-            Add New Project
-          </button>
+          {isAdmin && (
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(14,165,233,0.3)]"
+            >
+              <i className="fas fa-plus mr-2 text-xs"></i>
+              Add New Project
+            </button>
+          )}
         </div>
 
         {loading && !isModalOpen && (
@@ -162,7 +182,7 @@ const Projects = () => {
         {!loading && projects.length === 0 && (
           <div className="text-center py-20 bg-zinc-900/30 rounded-3xl border border-dashed border-zinc-800">
             <i className="fas fa-folder-open text-5xl text-zinc-700 mb-4"></i>
-            <p className="text-zinc-500 font-medium">No projects found. Click "Add New Project" to get started.</p>
+            <p className="text-zinc-500 font-medium">No projects found. {isAdmin ? 'Click "Add New Project" to get started.' : ''}</p>
           </div>
         )}
 
@@ -231,20 +251,22 @@ const Projects = () => {
                   <i className="fas fa-external-link-alt mr-2"></i>
                   View Live
                 </a>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openEditModal(project)}
-                    className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all border border-zinc-700"
-                  >
-                    <i className="fas fa-edit text-sm"></i>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(project._id)}
-                    className="p-2 bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-500 rounded-lg transition-all border border-zinc-700 hover:border-red-500/50"
-                  >
-                    <i className="fas fa-trash text-sm"></i>
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditModal(project)}
+                      className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-all border border-zinc-700"
+                    >
+                      <i className="fas fa-edit text-sm"></i>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(project._id)}
+                      className="p-2 bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-500 rounded-lg transition-all border border-zinc-700 hover:border-red-500/50"
+                    >
+                      <i className="fas fa-trash text-sm"></i>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

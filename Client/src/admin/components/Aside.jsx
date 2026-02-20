@@ -1,12 +1,13 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 const Aside = () => {
+  const { user, logout } = useAuth();
 
   const linkClass = ({ isActive }) =>
     `sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition
      ${isActive ? "active" : "hover:bg-white/5"}`;
-
 
   return (
     <>
@@ -15,7 +16,7 @@ const Aside = () => {
         id="sidebar"
         className="fixed inset-y-0 left-0 w-64 sidebar z-50 transform -translate-x-full md:translate-x-0"
       >
-        <div className="p-6">
+        <div className="p-6 h-full relative flex flex-col">
           {/* LOGO */}
           <div className="flex items-center gap-3 mb-10">
             <div className="w-8 h-8 rounded-full bg-[#00AEEF] flex items-center justify-center">
@@ -27,7 +28,7 @@ const Aside = () => {
           </div>
 
           {/* NAV */}
-          <nav className="space-y-1">
+          <nav className="space-y-1 flex-1 overflow-y-auto custom-scrollbar pr-2">
             <NavLink to="/admin" end className={linkClass}>
               <i className="fas fa-chart-line w-5"></i>
               <span>Dashboard</span>
@@ -73,19 +74,20 @@ const Aside = () => {
           </nav>
 
           {/* USER CARD */}
-          <div className="absolute bottom-8 left-6 right-6">
+          <div className="mt-8">
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-600 overflow-hidden">
-                <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Rudra"
-                  alt="Avatar"
-                />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white uppercase overflow-hidden">
+                {user?.username?.charAt(0) || 'R'}
               </div>
-              <div>
-                <p className="text-xs font-semibold">Rudra</p>
-                <p className="text-[10px] text-gray-400">Main Developer</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold truncate text-white">{user?.username || 'Rudra'}</p>
+                <p className="text-[10px] text-zinc-500 capitalize">{user?.role || 'Viewer'}</p>
               </div>
-              <button className="ml-auto text-gray-400 hover:text-white">
+              <button
+                onClick={logout}
+                title="Logout"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-red-500/20 transition-all"
+              >
                 <i className="fas fa-sign-out-alt"></i>
               </button>
             </div>

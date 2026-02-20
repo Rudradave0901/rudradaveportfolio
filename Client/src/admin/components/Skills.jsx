@@ -1,9 +1,12 @@
 import React, { useState, useRef } from "react";
 import useSkills from "../../hooks/useSkills";
+import { useAuth } from "../../context/AuthContext";
 
 const BASE_URL = "http://localhost:4000";
 
 const Skills = () => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === "admin";
     const {
         skills,
         loading,
@@ -38,6 +41,7 @@ const Skills = () => {
     };
 
     const openAddModal = () => {
+        if (!isAdmin) return;
         setIsEditMode(false);
         setCurrentSkillId(null);
         resetForm();
@@ -45,6 +49,7 @@ const Skills = () => {
     };
 
     const openEditModal = (skill) => {
+        if (!isAdmin) return;
         setIsEditMode(true);
         setCurrentSkillId(skill._id);
         setFormData({
@@ -58,6 +63,7 @@ const Skills = () => {
     };
 
     const handleImageChange = (e) => {
+        if (!isAdmin) return;
         const file = e.target.files[0];
         if (file) {
             setFormData({ ...formData, skillImage: file });
@@ -70,12 +76,14 @@ const Skills = () => {
     };
 
     const handleInputChange = (e) => {
+        if (!isAdmin) return;
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!isAdmin) return;
 
         const data = new FormData();
         data.append("skillName", formData.skillName);
@@ -99,6 +107,7 @@ const Skills = () => {
     };
 
     const handleDelete = async (id) => {
+        if (!isAdmin) return;
         if (window.confirm("Are you sure you want to delete this skill?")) {
             await removeSkill(id);
         }
@@ -108,21 +117,31 @@ const Skills = () => {
         <section id="section-skills" className="content-section py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                    <div>
-                        <h3 className="text-3xl font-extrabold text-white tracking-tight">
-                            Essential Tools
-                        </h3>
-                        <p className="mt-2 text-zinc-400">
-                            Manage the technologies and tools in your arsenal.
-                        </p>
+                    <div className="flex items-center gap-4">
+                        <div>
+                            <h3 className="text-3xl font-extrabold text-white tracking-tight">
+                                Essential Tools
+                            </h3>
+                            <p className="mt-2 text-zinc-400">
+                                Manage the technologies and tools in your arsenal.
+                            </p>
+                        </div>
+                        {!isAdmin && (
+                            <div className="px-4 py-1.5 bg-zinc-800 text-zinc-400 text-xs font-bold uppercase tracking-widest rounded-full border border-zinc-700">
+                                <i className="fas fa-eye mr-2"></i>
+                                Read Only Mode
+                            </div>
+                        )}
                     </div>
-                    <button
-                        onClick={openAddModal}
-                        className="inline-flex items-center px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(8,145,178,0.3)]"
-                    >
-                        <i className="fas fa-plus mr-2 text-xs"></i>
-                        Add New Tool
-                    </button>
+                    {isAdmin && (
+                        <button
+                            onClick={openAddModal}
+                            className="inline-flex items-center px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(8,145,178,0.3)]"
+                        >
+                            <i className="fas fa-plus mr-2 text-xs"></i>
+                            Add New Tool
+                        </button>
+                    )}
                 </div>
 
                 {loading && !isModalOpen && (
@@ -136,7 +155,7 @@ const Skills = () => {
                 {!loading && skills.length === 0 && (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-3xl border border-dashed border-zinc-800">
                         <i className="fas fa-tools text-5xl text-zinc-700 mb-4"></i>
-                        <p className="text-zinc-500 font-medium">No tools found. Click "Add New Tool" to get started.</p>
+                        <p className="text-zinc-500 font-medium">No tools found. {isAdmin ? 'Click "Add New Tool" to get started.' : ''}</p>
                     </div>
                 )}
 
@@ -163,20 +182,22 @@ const Skills = () => {
                             </div>
 
                             {/* Actions Overlay */}
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                <button
-                                    onClick={() => openEditModal(skill)}
-                                    className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-all border border-zinc-700"
-                                >
-                                    <i className="fas fa-edit text-xs"></i>
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(skill._id)}
-                                    className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-500 rounded-lg transition-all border border-zinc-700 hover:border-red-500/50"
-                                >
-                                    <i className="fas fa-trash text-xs"></i>
-                                </button>
-                            </div>
+                            {isAdmin && (
+                                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                    <button
+                                        onClick={() => openEditModal(skill)}
+                                        className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-all border border-zinc-700"
+                                    >
+                                        <i className="fas fa-edit text-xs"></i>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(skill._id)}
+                                        className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-500 rounded-lg transition-all border border-zinc-700 hover:border-red-500/50"
+                                    >
+                                        <i className="fas fa-trash text-xs"></i>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

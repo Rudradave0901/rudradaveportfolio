@@ -6,7 +6,7 @@ import { protect, authorize } from "../middleweres/auth.middleware.js";
 const router = express.Router();
 
 // Sample route for projects
-router.get("/", protect, getProjectsController)
+router.get("/", getProjectsController)
 router.post("/",
     protect,
     authorize("admin"),

@@ -8,7 +8,8 @@ const NAV_ITEMS = [
   { label: "About", id: "about", isScroll: true },
   { label: "Skills", id: "skills", isScroll: true },
   { label: "Work", id: "work", isScroll: true },
-  { label: "Resume", id: "resume", isScroll: false, path: "/resume" },
+  { label: "Resume", id: "resume", isScroll: true },
+  { label: "Contact", id: "contact", isScroll: true },
 ];
 
 /* ======================================================
@@ -25,8 +26,8 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full h-20 z-40 flex items-center bg-zinc-900/90 backdrop-blur-md border-b border-white/5">
-      <div className="max-w-screen-2xl mx-auto w-full px-4 md:px-6 flex items-center justify-between md:grid md:grid-cols-[1fr_3fr_1fr]">
+    <header className="fixed top-0 left-0 w-full h-20 flex items-center z-40 bg-gradient-to-b from-zinc-900 to-zinc-900/0">
+      <div className="max-w-screen-2xl w-full mx-auto px-4 items-center justify-between flex md:grid md:grid-cols-[1fr_3fr_1fr] md:px-6">
 
         <Link to="/" className="logo">
           <img src="/images/logo.svg" alt="Logo" width={40} height={40} />
@@ -61,7 +62,7 @@ const Header = () => {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="btn btn-secondary !h-10 !px-4 text-sm">
+            <Link to="/login" className="btn btn-secondary !h-10 !px-8 text-sm flex items-center">
               Login
             </Link>
           )}

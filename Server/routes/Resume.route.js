@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/", protect, authorize("admin"), createResume)
 
 // PUBLIC (Now Protected for Viewer/Admin as per RBAC requirement)
-router.get("/", protect, getResume)
+router.get("/", getResume)
 
 // DELETE
 router.delete("/", protect, authorize("admin"), deleteResume)

@@ -1,3 +1,6 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
 const socialLinks = [
   {
     href: 'https://github.com/Rudradave0901',
@@ -16,56 +19,137 @@ const socialLinks = [
 ];
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [status, setStatus] = useState({
+    loading: false,
+    success: false,
+    error: null
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true, success: false, error: null });
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/messages`, formData);
+      if (response.data.success) {
+        setStatus({ loading: false, success: true, error: null });
+        setFormData({ name: '', email: '', message: '' });
+        setTimeout(() => setStatus(prev => ({ ...prev, success: false })), 5000);
+      }
+    } catch (err) {
+      setStatus({
+        loading: false,
+        success: false,
+        error: err.response?.data?.message || 'Something went wrong. Please try again later.'
+      });
+    }
+  };
+
   return (
     <>
-        <section id="contact" className="section">
-            <div className="container lg:grid-cols-2 lg:items-stretch">
-                <div className="mb-12 lg:mb-0 lg:flex lg:flex-col">
-                    <h2 className="section-title mb-0 reveal-up">
-                        contact for <span>collaboration</span> :
-                    </h2>
+      <section id="contact" className="section">
+        <div className="container lg:grid-cols-2 lg:items-stretch">
+          <div className="mb-12 lg:mb-0 lg:flex lg:flex-col">
+            <h2 className="section-title mb-0 reveal-up">
+              contact for <span>collaboration</span> :
+            </h2>
 
-                    <p className="text-zinc-400 mt-3 mb-8 max-w-[50ch] lg:max-w-[40ch] reveal-up font-s-16">
-                        Reach out today to discuss your project needs and start collaborating on something amazing!
-                    </p>
+            <p className="text-zinc-400 mt-3 mb-8 max-w-[50ch] lg:max-w-[40ch] reveal-up font-s-16">
+              Reach out today to discuss your project needs and start collaborating on something amazing!
+            </p>
 
-                    <div className="flex items-center gap-2 mt-auto mb-5">
-                        {socialLinks.map(({
-                            href, icon }, key) => (
-                            <a key={key} href={href} target="_blank" className="w-12 h-12 grid place-items-center ring-inset ring-2 ring-zinc-50/5 rounded-lg transition-[background-color,color] hover:bg-zinc-50/80">
-                                {icon}
-                            </a>
-                        ))}
-                    </div>
+            <div className="flex items-center gap-2 mt-auto mb-5">
+              {socialLinks.map(({
+                href, icon }, key) => (
+                <a key={key} href={href} target="_blank" className="w-12 h-12 grid place-items-center ring-inset ring-2 ring-zinc-50/5 rounded-lg transition-[background-color,color] hover:bg-zinc-50/80">
+                  {icon}
+                </a>
+              ))}
+            </div>
 
-                </div>
+          </div>
 
-                <form action="https://getform.io/f/ayvyqkdb" method="POST" className="xl:pl-10 2xl:pl-20">
-                    <div className="md:grid md:items-center md:grid-cols-2 md:gap-2">
+          <form onSubmit={handleSubmit} className="xl:pl-10 2xl:pl-20">
+            <div className="md:grid md:items-center md:grid-cols-2 md:gap-2">
 
-                        <div className="mb-4">
-                            <label htmlFor="name" className="label reveal-up">Name</label>
-                            <input type="text" name="name" id="name" autoComplete="name" required placeholder="Write Full Name" className="text-field" />
-                        </div>
+              <div className="mb-4">
+                <label htmlFor="name" className="label reveal-up">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  autoComplete="name"
+                  required
+                  placeholder="Write Full Name"
+                  className="text-field"
+                />
+              </div>
 
-                        <div className="mb-4">
-                            <label htmlFor="email" className="label reveal-up">Email</label>
-                            <input type="email" name="email" id="email" autoComplete="email" required placeholder="Write Email Address" className="text-field" />
-                        </div>
-
-                    </div>
-
-                    <div className="mb-4">
-                        <label htmlFor="message" className="label reveal-up">Message</label>
-                        <textarea name="message" id="message" placeholder="Hi!" className="text-field resize-y min-h-32 max-h-80" required></textarea>
-                    </div>
-
-                    <button type="submit" className="btn btn-primary [&]:max-w-full w-full justify-center reveal-up">Submit</button>
-
-                </form>
+              <div className="mb-4">
+                <label htmlFor="email" className="label reveal-up">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  required
+                  placeholder="Write Email Address"
+                  className="text-field"
+                />
+              </div>
 
             </div>
-        </section>
+
+            <div className="mb-4">
+              <label htmlFor="message" className="label reveal-up">Message</label>
+              <textarea
+                name="message"
+                id="message"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Hi!"
+                className="text-field resize-y min-h-32 max-h-80"
+                required
+              ></textarea>
+            </div>
+
+            {status.error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg text-sm">
+                {status.error}
+              </div>
+            )}
+
+            {status.success && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 text-green-500 rounded-lg text-sm">
+                Message sent successfully! I'll get back to you soon.
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={status.loading}
+              className="btn btn-primary [&]:max-w-full w-full justify-center reveal-up disabled:opacity-50"
+            >
+              {status.loading ? 'Sending...' : 'Submit'}
+            </button>
+
+          </form>
+
+        </div>
+      </section>
     </>
   )
 }
