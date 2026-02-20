@@ -7,9 +7,13 @@ import App from './App.jsx';
 import './index.css'
 import 'lenis/dist/lenis.css'
 
+import { AuthProvider } from './context/AuthContext.jsx';
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </BrowserRouter>
 );
 // 101923869012

@@ -1,35 +1,36 @@
 import { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-
-// Static data
-// import { NAV_ITEMS } from "../data/AllDataArray";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const NAV_ITEMS = [
-  { label: "Home", id: "home" },
-  { label: "About", id: "about" },
-  { label: "Skills", id: "skills" },
-  { label: "Work", id: "work" },
-  { label: "Resume", id: "resume" },
-  {
-    label: "Contact",
-    id: "contact",
-    className: "md:!hidden", // Mobile-only link
-  },
+  { label: "Home", id: "home", isScroll: true },
+  { label: "About", id: "about", isScroll: true },
+  { label: "Skills", id: "skills", isScroll: true },
+  { label: "Work", id: "work", isScroll: true },
+  { label: "Resume", id: "resume", isScroll: false, path: "/resume" },
 ];
 
 /* ======================================================
    Header
-====================================================== */
+ ====================================================== */
 const Header = () => {
   const [navOpen, setNavOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
-    <header className="fixed top-0 left-0 w-full h-20 z-40 flex items-center bg-gradient-to-b from-zinc-900 to-zinc-900/0">
+    <header className="fixed top-0 left-0 w-full h-20 z-40 flex items-center bg-zinc-900/90 backdrop-blur-md border-b border-white/5">
       <div className="max-w-screen-2xl mx-auto w-full px-4 md:px-6 flex items-center justify-between md:grid md:grid-cols-[1fr_3fr_1fr]">
 
-        <a href="/" className="logo">
+        <Link to="/" className="logo">
           <img src="/images/logo.svg" alt="Logo" width={40} height={40} />
-        </a>
+        </Link>
 
         <div className="relative md:justify-self-center">
           <button
@@ -44,10 +45,27 @@ const Header = () => {
           <Navbar navOpen={navOpen} />
         </div>
 
-        <a href="#contact" className="btn btn-secondary hidden md:flex ml-auto">
-          Contact Me
-          <img src="/images/callIcon.svg" alt="Call" width={16} height={16} />
-        </a>
+        <div className="flex items-center gap-4 ml-auto">
+          {user ? (
+            <div className="flex items-center gap-4">
+              {user.role === "admin" && (
+                <Link to="/admin" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+                  Admin
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="btn btn-primary !h-10 !px-4 text-sm"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="btn btn-secondary !h-10 !px-4 text-sm">
+              Login
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -57,10 +75,11 @@ export default Header;
 
 /* ======================================================
    Navbar
-====================================================== */
+ ====================================================== */
 const Navbar = ({ navOpen }) => {
   const activeBoxRef = useRef(null);
   const [activeSection, setActiveSection] = useState("home");
+  const navigate = useNavigate();
 
   const updateActiveBox = () => {
     const activeLink = document.querySelector(
@@ -68,7 +87,7 @@ const Navbar = ({ navOpen }) => {
     );
 
     if (!activeLink || !activeBoxRef.current) {
-      activeBoxRef.current.style.opacity = "0";
+      if (activeBoxRef.current) activeBoxRef.current.style.opacity = "0";
       return;
     }
 
@@ -91,9 +110,10 @@ const Navbar = ({ navOpen }) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      let current = "home";
+      let current = activeSection;
 
-      document.querySelectorAll("section[id]").forEach((section) => {
+      const sections = document.querySelectorAll("section[id]");
+      sections.forEach((section) => {
         if (window.scrollY >= section.offsetTop - 150) {
           current = section.id;
         }
@@ -108,29 +128,46 @@ const Navbar = ({ navOpen }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleNavClick = (e) => {
-    e.preventDefault();
-    const id = e.currentTarget.dataset.section;
+  const handleNavClick = (e, item) => {
+    if (item.isScroll) {
+      e.preventDefault();
+      const id = item.id;
+      setActiveSection(id);
 
-    setActiveSection(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      if (window.location.pathname !== "/") {
+        navigate("/#" + id);
+      } else {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
   };
 
   return (
     <nav className={`navbar ${navOpen ? "active" : ""}`}>
-      {NAV_ITEMS.map(({ label, id, className }) => (
-        <a
-          key={id}
-          href={`#${id}`}
-          data-section={id}
-          onClick={handleNavClick}
-          className={`nav-link font-s-14 ${className || ""} ${
-            activeSection === id ? "active" : ""
-          }`}
-        >
-          {label}
-        </a>
-      ))}
+      {NAV_ITEMS.map((item) => {
+        const { label, id, isScroll, path } = item;
+        return isScroll ? (
+          <a
+            key={id}
+            href={`#${id}`}
+            data-section={id}
+            onClick={(e) => handleNavClick(e, item)}
+            className={`nav-link font-s-14 ${activeSection === id ? "active" : ""
+              }`}
+          >
+            {label}
+          </a>
+        ) : (
+          <Link
+            key={id}
+            to={path}
+            className="nav-link font-s-14"
+            data-section={id}
+          >
+            {label}
+          </Link>
+        );
+      })}
 
       <div className="active-box" ref={activeBoxRef} />
     </nav>
@@ -140,3 +177,4 @@ const Navbar = ({ navOpen }) => {
 Navbar.propTypes = {
   navOpen: PropTypes.bool.isRequired,
 };
+

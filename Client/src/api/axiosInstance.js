@@ -5,13 +5,14 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        return Promise.reject(error);
-    }
+  (response) => response,
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 export default axiosInstance;
