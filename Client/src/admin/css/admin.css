@@ -1,0 +1,117 @@
+ .admin-page-wrapper {
+            --bg-dark: #121212;
+            --card-dark: #1e1e24;
+            --accent-cyan: #00AEEF;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+        }
+
+        .admin-page-wrapper {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .admin-page-wrapper .sidebar {
+            background-color: var(--card-dark);
+            transition: all 0.3s ease;
+        }
+
+        .admin-page-wrapper .sidebar-link {
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .admin-page-wrapper .sidebar-link.active {
+            color: var(--accent-cyan);
+            background-color: rgba(0, 174, 239, 0.1);
+            border-right: 3px solid var(--accent-cyan);
+        }
+
+        .admin-page-wrapper .sidebar-link:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-page-wrapper .card {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-page-wrapper .btn-cyan {
+            background-color: var(--accent-cyan);
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .admin-page-wrapper .btn-cyan:hover {
+            opacity: 0.9;
+        }
+
+        .admin-page-wrapper .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 0.5rem;
+        }
+
+        .admin-page-wrapper .input-dark:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(0, 174, 239, 0.2);
+        }
+
+        /* Custom Scrollbar */
+        .admin-page-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+        .admin-page-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        .admin-page-wrapper::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+        .admin-page-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-cyan);
+        }
+
+        .admin-page-wrapper .glass-header {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 40;
+        }
+
+        .admin-page-wrapper .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Standardized Add New Card */
+        .admin-page-wrapper .add-new-card {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            cursor: pointer;
+            min-height: 200px;
+        }
+
+        .admin-page-wrapper .add-new-card:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 174, 239, 0.05);
+        }
+
+        .admin-page-wrapper .add-new-card i {
+            font-size: 1.5rem;
+            color: #444;
+            transition: color 0.3s;
+        }
+
+        .admin-page-wrapper .add-new-card:hover i {
+            color: var(--accent-cyan);
+        }
