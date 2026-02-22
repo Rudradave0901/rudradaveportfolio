@@ -7,7 +7,9 @@ const ButtonPrimary = ({
   label,
   icon,
   iconImg,
-  classes = ""
+  classes = "",
+  onClick,
+  disabled
 }) => {
   const content = (
     <>
@@ -27,7 +29,7 @@ const ButtonPrimary = ({
       {content}
     </a>
   ) : (
-    <button className={`btn btn-primary ${classes}`}>
+    <button className={`btn btn-primary ${classes}`} onClick={onClick} disabled={disabled}>
       {content}
     </button>
   );
@@ -39,7 +41,9 @@ ButtonPrimary.propTypes = {
   target: PropTypes.string,
   icon: PropTypes.string,
   iconImg: PropTypes.string,
-  classes: PropTypes.string
+  classes: PropTypes.string,
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool
 };
 
 // 🟠 ButtonOutline Component
@@ -49,7 +53,9 @@ const ButtonOutline = ({
   label,
   icon,
   iconImg,
-  classes = ""
+  classes = "",
+  onClick,
+  disabled
 }) => {
   const content = (
     <>
@@ -69,7 +75,7 @@ const ButtonOutline = ({
       {content}
     </a>
   ) : (
-    <button className={`btn btn-outline ${classes}`}>
+    <button className={`btn btn-outline ${classes}`} onClick={onClick} disabled={disabled}>
       {content}
     </button>
   );
@@ -81,7 +87,9 @@ ButtonOutline.propTypes = {
   target: PropTypes.string,
   icon: PropTypes.string,
   iconImg: PropTypes.string,
-  classes: PropTypes.string
+  classes: PropTypes.string,
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool
 };
 
 // 🔄 Export both

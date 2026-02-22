@@ -1,6 +1,10 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { ButtonOutline, ButtonPrimary } from './Button'
 import useBanner from '../hooks/useBanner';
+import '../pages/css/Resume.css';
+import useResume from '../hooks/useResume';
+import { useResumeDownload } from '../hooks/useResumeDownload';
+import ActiveResumeContent from './ResumeTemplates/ActiveResumeContent';
 
 const BASE_URL = "http://localhost:4000";
 
@@ -52,12 +56,11 @@ const Banner = () => {
 
                     <div className="flex items-center gap-3">
                         <ButtonPrimary
-                            herf={'/resume'}
+                            herf={'/resume?action=download'}
                             target={'_blank'}
                             label="Download CV"
                             iconImg="/images/downloadIcon.svg"
                             classes='flex align-center'
-                            download
                         />
 
                         <ButtonOutline

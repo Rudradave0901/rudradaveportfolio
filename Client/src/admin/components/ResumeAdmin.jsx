@@ -90,6 +90,24 @@ const ResumeAdmin = () => {
 
             {activeTab === 'header' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800">
+                  <label className="block text-xs font-bold text-cyan-500 uppercase tracking-widest mb-4">Active Resume Design</label>
+                  <div className="flex items-center gap-4">
+                    <select
+                      value={resumeData?.templateId || 'Resume1'}
+                      onChange={(e) => isAdmin && setResumeData({ ...resumeData, templateId: e.target.value })}
+                      disabled={!isAdmin}
+                      className="flex-1 bg-zinc-900 border border-zinc-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 transition-all font-semibold"
+                    >
+                      <option value="Resume1">Modern Sidebar (Default)</option>
+                      <option value="Resume2">Minimal Professional (New)</option>
+                    </select>
+                    <div className="text-zinc-500 text-sm italic">
+                      This design will be visible on your /resume page and used for all downloads.
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormInput
                     label="Full Name"

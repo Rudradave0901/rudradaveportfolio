@@ -157,10 +157,15 @@ const ResumeSchema = new mongoose.Schema(
       type: [ProjectSchema],
       default: [],
     },
-    
+
     achievements: {
       type: [String],
       default: [],
+    },
+
+    templateId: {
+      type: String,
+      default: "Resume1",
     },
 
     isActive: {
