@@ -357,7 +357,7 @@ main {
 	position: absolute;
 	height: 15px;
 	width: 15px;
-	background: url(../public/images/rightIcon.svg) no-repeat center;
+	background: url(/images/icons/rightIcon.svg) no-repeat center;
 	background-size: cover;
 	left: 0;
 	top: 5px;

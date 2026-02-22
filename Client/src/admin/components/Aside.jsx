@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const Aside = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const linkClass = ({ isActive }) =>
     `sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition
@@ -83,13 +83,6 @@ const Aside = () => {
                 <p className="text-xs font-semibold truncate text-white">{user?.username || 'Rudra'}</p>
                 <p className="text-[10px] text-zinc-500 capitalize">{user?.role || 'Viewer'}</p>
               </div>
-              <button
-                onClick={logout}
-                title="Logout"
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-red-500/20 transition-all"
-              >
-                <i className="fas fa-sign-out-alt"></i>
-              </button>
             </div>
           </div>
         </div>

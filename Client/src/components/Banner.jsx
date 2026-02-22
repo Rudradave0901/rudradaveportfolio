@@ -52,7 +52,7 @@ const Banner = () => {
 
                     <div className="flex items-center gap-3">
                         <ButtonPrimary
-                            herf={'/resume/Rudra_Dave_Resume.pdf'}
+                            herf={'/resume'}
                             target={'_blank'}
                             label="Download CV"
                             iconImg="/images/downloadIcon.svg"

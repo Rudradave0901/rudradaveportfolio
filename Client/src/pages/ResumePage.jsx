@@ -15,13 +15,13 @@ const Resume = () => {
         try {
             resumeRef.current.classList.add("pdf-export");
             const canvas = await html2canvas(resumeRef.current, {
-                scale: 3.5,
+                scale: 2, // Moderate scale for large documents
                 useCORS: true,
                 logging: false,
                 backgroundColor: "#ffffff",
                 windowWidth: 1200,
+                scrollY: -window.scrollY, // Fix for scrolled pages
                 onclone: (clonedDoc) => {
-                    // Fix for html2canvas bug with modern CSS color functions like oklch
                     const elements = clonedDoc.getElementsByTagName('*');
                     for (let i = 0; i < elements.length; i++) {
                         const el = elements[i];
@@ -29,22 +29,14 @@ const Resume = () => {
                         ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke'].forEach(prop => {
                             const value = style[prop];
                             if (value && (value.includes('oklch') || value.includes('var('))) {
-                                // Force standard colors for elements using modern CSS or complex variables
                                 if (prop === 'backgroundColor' && value.includes('oklch')) el.style.backgroundColor = '#ffffff';
                                 if (prop === 'color' && value.includes('oklch')) el.style.color = '#333333';
                             }
                         });
-
-                        // Alignment Fix: Force uniform text rendering properties to avoid vertical shifting
                         if (style.height === 'auto') {
                             el.style.height = el.offsetHeight + 'px';
                         }
-
-                        // Font alignment stability
-                        el.style.fontKerning = 'normal';
                     }
-
-                    // Remove any style tags that might contain problematic CSS
                     const styleTags = clonedDoc.getElementsByTagName('style');
                     for (let i = 0; i < styleTags.length; i++) {
                         if (styleTags[i].innerHTML.includes('oklch')) {
@@ -54,15 +46,16 @@ const Resume = () => {
                 }
             });
             const imgData = canvas.toDataURL('image/png', 1.0);
+
+            // Calculate PDF dimensions based on the captured canvas
+            const pdfWidth = 210; // A4 width in mm
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
-                format: 'a4'
+                format: [pdfWidth, pdfHeight] // Use custom format for long resumes
             });
-
-            const imgProps = pdf.getImageProperties(imgData);
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
             pdf.save(`${resumeData.profile.name.replace(/\s+/g, '_')}_Resume.pdf`);
@@ -208,15 +201,15 @@ const Resume = () => {
                                                     </li>
                                                 )}
                                                 {contact.linkedin.map((item, i) => (
-                                                    <li className='linkedinicon'>
+                                                    <li className='linkedinicon' key={i}>
                                                         <img src="/images/icons/linkedin-icon.svg" alt="linkedin icon" height={20} width={20} />
-                                                        <a key={i} href={item.url} target="_blank">{item.label}</a>
+                                                        <a href={item.url} target="_blank">{item.label}</a>
                                                     </li>
                                                 ))}
                                                 {contact.github.map((item, i) => (
-                                                    <li className='githubicon'>
+                                                    <li className='githubicon' key={i}>
                                                         <img src="/images/icons/gitgub-icon.svg" alt="github icon" height={20} width={20} />
-                                                        <a key={i} href={item.url}>{item.label}</a>
+                                                        <a href={item.url}>{item.label}</a>
                                                     </li>
                                                 ))}
                                                 {contact.portfolio && (

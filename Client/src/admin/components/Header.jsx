@@ -1,8 +1,14 @@
-import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const Header = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/');
+    };
 
     return (
         <>
@@ -18,6 +24,13 @@ const Header = () => {
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={handleLogout}
+                        className="btn btn-primary !h-10 !px-4 text-sm flex items-center gap-2"
+                    >
+                        <span className="material-symbols-rounded text-lg">logout</span>
+                        Logout
+                    </button>
                     <button className="md:hidden text-white p-2">
                         <i className="fas fa-bars"></i>
                     </button>

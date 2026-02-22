@@ -20,8 +20,12 @@
   line-height: 1.6;
   background: #e2e8f0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  /* Ensure scrolling starts from left */
   padding: 2.5rem 1.25rem;
+  overflow-x: auto;
+  /* Enable horizontal scroll if screen is small */
+  -webkit-overflow-scrolling: touch;
 }
 
 .resume-container-main ul,
@@ -45,7 +49,11 @@
 
 /* --- 2. LAYOUT CONTAINER (A4 Shape) --- */
 .resume-container-main .container {
-  max-width: 1140px;
+  width: 1140px;
+  /* Force fixed width */
+  min-width: 1140px;
+  /* Prevent shrinking */
+  margin: 0 auto;
   padding-left: calc(1.5rem * 0.5);
   padding-right: calc(1.5rem * 0.5);
 }
@@ -53,9 +61,11 @@
 .resume-container-main .resume-page {
   display: grid;
   grid-template-columns: 28% 1fr;
-  padding: clamp(2.5rem, 5vw, 4.125rem) 0;
+  padding: 4.125rem 0;
+  /* Removed clamp to keep consistent spacing */
   background: #FFFFFF;
   position: relative;
+  width: 100%;
 }
 
 .resume-container-main .resume-page::before {
@@ -64,7 +74,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: clamp(1.2rem, 2.5vw, 1.875rem);
+  height: 1.875rem;
   background: var(--top-gradiant);
 }
 
@@ -73,7 +83,7 @@
 ============================= */
 .resume-container-main .sidePanel-main {
   background: var(--bg-white);
-  padding: clamp(1.8rem, 4vw, 2.5rem) 0;
+  padding: 2.5rem 0;
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
@@ -108,11 +118,11 @@
   justify-content: center;
   align-items: start;
   width: 100%;
-  padding: 0.625rem clamp(1.5rem, 3vw, 3.125rem);
+  padding: 0.625rem 3.125rem;
 }
 
 .resume-container-main .sidePanel-main .profile-header h1 {
-  font-size: clamp(1.6rem, 2.2vw, 2.1rem);
+  font-size: 2.1rem;
   line-height: 1.1;
   color: #fff;
   font-weight: 700;
@@ -128,7 +138,7 @@
 
 /* Content */
 .resume-container-main .sidePanel-content-wrapper {
-  padding: 0 clamp(1.5rem, 3vw, 3.125rem);
+  padding: 0 3.125rem;
 }
 
 .resume-container-main .sidePanel-content-wrapper .content-wrapper,
@@ -139,7 +149,7 @@
 .resume-container-main .sidePanel-content-wrapper .sidePanel-content-title {
   font-family: var(--font-family-inter);
   font-weight: 700;
-  font-size: clamp(1.1rem, 1.6vw, 1.375rem);
+  font-size: 1.375rem;
   line-height: 1.3;
   color: var(--color-primary);
   margin-bottom: 1.25rem;
@@ -159,7 +169,7 @@
     Right Content Design 
 ============================= */
 .resume-container-main .right-content-wrapper {
-  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  padding: 2.5rem;
 }
 
 .resume-container-main .right-content-wrapper .section-contents-wrap {
@@ -169,10 +179,10 @@
 .resume-container-main .right-content-wrapper .section-title {
   font-family: var(--font-family-jost);
   font-weight: 700;
-  font-size: clamp(1.1rem, 1.6vw, 1.375rem);
+  font-size: 1.375rem;
   line-height: 1.3;
   color: var(--text-white);
-  padding: 0.5rem clamp(0.75rem, 1.8vw, 1rem);
+  padding: 0.5rem 1rem;
   text-transform: capitalize;
   background: var(--color-primary);
   box-shadow: 0rem 0.25rem 0rem #C2E6F5;
@@ -194,7 +204,7 @@
 /* Right Side Sections Design */
 .resume-container-main .section-contents-wrap .job-title {
   font-weight: 700;
-  font-size: clamp(1.05rem, 1.3vw, 1.188rem);
+  font-size: 1.188rem;
   line-height: 1.3;
   color: var(--text-black);
   margin-bottom: 0.8rem;
@@ -202,7 +212,7 @@
 
 .resume-container-main .section-contents-wrap .job-details li {
   position: relative;
-  font-size: clamp(0.95rem, 1.2vw, 1.075rem);
+  font-size: 1.075rem;
   line-height: 1.5;
   color: var(--text-black);
   margin-bottom: 0.5rem;
@@ -210,10 +220,12 @@
   align-items: baseline;
   gap: 0.625rem;
 }
+
 .resume-container-main .section-contents-wrap .job-details li img {
-  position: relative; 
+  position: relative;
   top: 3px;
 }
+
 /* ============================= 
     MEDIEA QUERIES 
 ============================= */
