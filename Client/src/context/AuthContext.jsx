@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from "react";
-import axiosInstance from "../api/axiosInstance";
+import AuthService from "../services/Auth.service";
 
 const AuthContext = createContext();
 
@@ -10,11 +10,18 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         checkUserLoggedIn();
+
+        const handleUnauthorized = () => {
+            setUser(null);
+        };
+
+        window.addEventListener('unauthorized', handleUnauthorized);
+        return () => window.removeEventListener('unauthorized', handleUnauthorized);
     }, []);
 
     const checkUserLoggedIn = async () => {
         try {
-            const { data } = await axiosInstance.get("/auth/me");
+            const data = await AuthService.getMe();
             setUser(data.data);
         } catch (err) {
             setUser(null);
@@ -26,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     const register = async (userData) => {
         try {
             setError(null);
-            const { data } = await axiosInstance.post("/auth/register", userData);
+            const data = await AuthService.signup(userData);
             setUser(data.user);
             return data;
         } catch (err) {
@@ -38,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (userData) => {
         try {
             setError(null);
-            const { data } = await axiosInstance.post("/auth/login", userData);
+            const data = await AuthService.login(userData.email, userData.password);
             setUser(data.user);
             return data;
         } catch (err) {
@@ -49,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axiosInstance.get("/auth/logout");
+            await AuthService.logout();
             setUser(null);
         } catch (err) {
             console.error("Logout failed", err);

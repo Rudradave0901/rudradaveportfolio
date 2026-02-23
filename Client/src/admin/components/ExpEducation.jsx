@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
 import useEduExp from '../../hooks/useEduExp';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
 
 const ExpEducation = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = checkIsAdmin(user);
     const { eduExpData, loading, error, addEduExp, editEduExp, removeEduExp } = useEduExp();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalType, setModalType] = useState('education'); // 'education' or 'experince'
+    const [modalType, setModalType] = useState('education'); // 'education' or 'experience'
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(null);
     const [currentDocId, setCurrentDocId] = useState(null);
 
     const [formData, setFormData] = useState({
         title: '', // courseName or designation
-        organization: '', // instituteName or compenyName
+        organization: '', // instituteName or companyName
         startDate: '',
         endDate: '',
         location: '',
-        discription: '' // comma separated string for input
+        description: '' // comma separated string for input
     });
 
     const resetForm = () => {
@@ -29,7 +30,7 @@ const ExpEducation = () => {
             startDate: '',
             endDate: '',
             location: '',
-            discription: ''
+            description: ''
         });
     };
 
@@ -49,11 +50,11 @@ const ExpEducation = () => {
         setCurrentDocId(docId);
         setFormData({
             title: type === 'education' ? item.courseName : item.designation,
-            organization: type === 'education' ? item.instituteName : item.compenyName,
+            organization: type === 'education' ? item.instituteName : item.companyName,
             startDate: item.startDate,
             endDate: item.endDate,
             location: item.location,
-            discription: (item.discription || []).join(', ')
+            description: (item.description || []).join(', ')
         });
         setIsModalOpen(true);
     };
@@ -64,18 +65,18 @@ const ExpEducation = () => {
 
         const itemData = {
             [modalType === 'education' ? 'courseName' : 'designation']: formData.title,
-            [modalType === 'education' ? 'instituteName' : 'compenyName']: formData.organization,
+            [modalType === 'education' ? 'instituteName' : 'companyName']: formData.organization,
             startDate: formData.startDate,
             endDate: formData.endDate,
             location: formData.location,
-            discription: formData.discription.split(',').map(s => s.trim()).filter(Boolean)
+            description: formData.description.split(',').map(s => s.trim()).filter(Boolean)
         };
 
         // If no document exists, create one
         if (eduExpData.length === 0) {
             const newDoc = {
                 education: modalType === 'education' ? [itemData] : [],
-                experince: modalType === 'experince' ? [itemData] : []
+                experience: modalType === 'experience' ? [itemData] : []
             };
             await addEduExp(newDoc);
         } else {
@@ -152,7 +153,7 @@ const ExpEducation = () => {
                                         <span className="text-xs bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full h-fit border border-zinc-700 font-medium whitespace-nowrap">{edu.startDate} - {edu.endDate}</span>
                                     </div>
                                     <ul className="text-sm text-zinc-400 space-y-2">
-                                        {edu.discription.map((item, i) => (
+                                        {edu.description.map((item, i) => (
                                             <li key={i} className="flex items-start gap-2">
                                                 <i className="fas fa-circle text-[6px] text-cyan-500 mt-2"></i>
                                                 {item}
@@ -177,7 +178,7 @@ const ExpEducation = () => {
                         <div className="space-y-6">
                             {isAdmin && (
                                 <button
-                                    onClick={() => openAddModal('experince')}
+                                    onClick={() => openAddModal('experience')}
                                     className="w-full card add-new-card min-h-[100px] p-6 mb-6 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 transition-all"
                                 >
                                     <i className="fas fa-plus mb-2 text-zinc-500"></i>
@@ -185,23 +186,23 @@ const ExpEducation = () => {
                                 </button>
                             )}
 
-                            {eduExpData.map(doc => doc.experince.map((exp, idx) => (
+                            {eduExpData.map(doc => doc.experience.map((exp, idx) => (
                                 <div key={`${doc._id}-exp-${idx}`} className="card p-6 border-l-4 border-l-cyan-500 relative group bg-zinc-900/50 hover:bg-zinc-900 transition-all rounded-xl border border-zinc-800">
                                     {isAdmin && (
                                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openEditModal('experince', idx, exp, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
-                                            <button onClick={() => handleDelete('experince', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
+                                            <button onClick={() => openEditModal('experience', idx, exp, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
+                                            <button onClick={() => handleDelete('experience', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
                                         </div>
                                     )}
                                     <div className="flex justify-between mb-4 pr-12">
                                         <div>
                                             <h4 className="font-bold text-lg text-white">{exp.designation}</h4>
-                                            <p className="text-sm text-zinc-400">@{exp.compenyName}, {exp.location}</p>
+                                            <p className="text-sm text-zinc-400">@{exp.companyName}, {exp.location}</p>
                                         </div>
                                         <span className="text-xs bg-cyan-500/10 text-cyan-500 px-3 py-1 rounded-full h-fit border border-cyan-500/20 font-medium whitespace-nowrap">{exp.startDate} - {exp.endDate}</span>
                                     </div>
                                     <ul className="text-sm text-zinc-400 space-y-2">
-                                        {exp.discription.map((item, i) => (
+                                        {exp.description.map((item, i) => (
                                             <li key={i} className="flex items-start gap-2">
                                                 <i className="fas fa-circle text-[6px] text-cyan-500 mt-2"></i>
                                                 {item}
@@ -285,8 +286,8 @@ const ExpEducation = () => {
                             <div>
                                 <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Description (Comma separated)</label>
                                 <textarea
-                                    value={formData.discription}
-                                    onChange={(e) => setFormData({ ...formData, discription: e.target.value })}
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     rows="3"
                                     className="w-full px-4 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:border-cyan-500 transition-all resize-none"
                                 />

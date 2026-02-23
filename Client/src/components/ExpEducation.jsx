@@ -44,7 +44,7 @@ const ExpEducation = () => {
                                                 </div>
 
                                                 <ul>
-                                                    {educationData.discription.map((desc, i) => (
+                                                    {educationData.description.map((desc, i) => (
                                                         <li key={i} className="inner-text">
                                                             {desc}
                                                         </li>
@@ -65,7 +65,7 @@ const ExpEducation = () => {
                             <div className="rd-timeline art-gallery relative">
 
                                 {eduExpData.map((doc) =>
-                                    doc.experince.map((experinceData, index) => (
+                                    doc.experience.map((experienceData, index) => (
                                         <div key={index} className="rd-timeline-item relative">
                                             <div className="rd-timeline-mark-light"></div>
                                             <div className="rd-timeline-mark"></div>
@@ -74,22 +74,22 @@ const ExpEducation = () => {
                                                 <div className="rd-card-header flex-col lg:flex-row">
                                                     <div className="rd-left-side">
                                                         <h5 className="cardtitle">
-                                                            {experinceData.designation} @ {experinceData.compenyName}
+                                                            {experienceData.designation} @ {experienceData.companyName}
                                                         </h5>
                                                         <div className="art-el-suptitle text-zinc-500 mb-4">
-                                                            {experinceData.location}
+                                                            {experienceData.location}
                                                         </div>
                                                     </div>
 
                                                     <div className="art-right-side mb-4">
                                                         <span className="rd-date">
-                                                            {experinceData.startDate} - {experinceData.endDate}
+                                                            {experienceData.startDate} - {experienceData.endDate}
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 <ul>
-                                                    {experinceData.discription.map((desc, i) => (
+                                                    {experienceData.description.map((desc, i) => (
                                                         <li key={i} className="inner-text">
                                                             {desc}
                                                         </li>

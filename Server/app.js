@@ -9,17 +9,37 @@ import authRoute from "./routes/auth.route.js";
 import messageRouter from "./routes/Message.route.js";
 import visitorRouter from "./routes/Visitor.route.js";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
-import { trackVisitor } from "./middleweres/visitor.middleware.js";
+import { trackVisitor } from "./middlewares/visitor.middleware.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 const app = express();
+
+// const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(o => o.trim().replace(/\/$/, "")) : [];
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true
 }));
 
-app.use(express.json());
+// Security HTTP headers
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// NoSQL injection prevention is handled natively by Mongoose schemas and strict Express Validator rules.
+// express-mongo-sanitize removed due to incompatibility with Express 5 res/req getters.
+
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use("/api/", limiter);
+
+app.use(express.json({ limit: '10kb' })); // Body limit
 app.use(cookieParser());
 app.use("/uploads", express.static("uploads"));
 
@@ -37,5 +57,8 @@ app.use("/api/resume", ResumeRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/messages", messageRouter);
 app.use("/api/visitors", visitorRouter);
+
+// Error Handling Middleware
+app.use(errorMiddleware);
 
 export { app };

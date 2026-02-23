@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useBanner from '../../hooks/useBanner';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
+import { API_CONSTANTS } from '../../constants/appConstants';
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = API_CONSTANTS.SERVER_URL;
 
 const Banner = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = checkIsAdmin(user);
     const { bannerData, loading, error, createBanner, updateBanner } = useBanner();
     const [formData, setFormData] = useState({
         name: '',

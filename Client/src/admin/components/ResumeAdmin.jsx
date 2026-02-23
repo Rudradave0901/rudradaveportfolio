@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import useResume from '../../hooks/useResume';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
 
 const ResumeAdmin = () => {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = checkIsAdmin(user);
   const { resumeData, loading, error, updateResume, createResume, setResumeData } = useResume();
   const [activeTab, setActiveTab] = useState("header");
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleUpdate = async () => {
+  const handleUpdate = useCallback(async () => {
     if (!isAdmin) return;
     setIsSaving(true);
     const result = resumeData._id
@@ -22,16 +23,16 @@ const ResumeAdmin = () => {
       alert(result.message);
     }
     setIsSaving(false);
-  };
+  }, [isAdmin, resumeData, updateResume, createResume]);
 
-  if (loading && !resumeData) return <div className="p-10 text-center text-zinc-500">Loading Resume Data...</div>;
-
-  const navTabs = [
+  const navTabs = useMemo(() => [
     { id: 'header', label: 'Identity & About', icon: 'fa-user-circle' },
     { id: 'contact', label: 'Connections', icon: 'fa-address-book' },
     { id: 'skills', label: 'Professional Skills', icon: 'fa-layer-group' },
     { id: 'highlights', label: 'Highlights & Achievements', icon: 'fa-award' }
-  ];
+  ], []);
+
+  if (loading && !resumeData) return <div className="p-10 text-center text-zinc-500">Loading Resume Data...</div>;
 
   return (
     <section id="resume-admin" className="content-section py-6 px-4">
@@ -248,7 +249,7 @@ const ResumeAdmin = () => {
                           setResumeData({
                             ...resumeData,
                             experience: [...(resumeData.experience || []), {
-                              compenyName: '', title: '', location: '', startDate: '', endDate: 'Present', points: ['']
+                              companyName: '', title: '', location: '', startDate: '', endDate: 'Present', points: ['']
                             }]
                           });
                         }}
@@ -263,10 +264,10 @@ const ResumeAdmin = () => {
                     {resumeData?.experience?.map((exp, ei) => (
                       <div key={ei} className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800 group/exp">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <FormInput label="Company" value={exp.compenyName} onChange={(v) => {
+                          <FormInput label="Company" value={exp.companyName} onChange={(v) => {
                             if (!isAdmin) return;
                             const updated = [...resumeData.experience];
-                            updated[ei].compenyName = v;
+                            updated[ei].companyName = v;
                             setResumeData({ ...resumeData, experience: updated });
                           }} readOnly={!isAdmin} />
                           <FormInput label="Role" value={exp.title} onChange={(v) => {
@@ -385,9 +386,9 @@ const ResumeAdmin = () => {
   );
 };
 
-// --- Reusable UI Sub-components ---
+// --- Memoized UI Sub-components ---
 
-const FormInput = ({ label, value, onChange, readOnly }) => (
+const FormInput = memo(({ label, value, onChange, readOnly }) => (
   <div>
     <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">{label}</label>
     <input
@@ -399,9 +400,9 @@ const FormInput = ({ label, value, onChange, readOnly }) => (
       placeholder={readOnly ? "None" : `Enter ${label}...`}
     />
   </div>
-);
+));
 
-const FormTextArea = ({ label, value, onChange, rows = 5, readOnly }) => (
+const FormTextArea = memo(({ label, value, onChange, rows = 5, readOnly }) => (
   <div>
     <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">{label}</label>
     <textarea
@@ -413,9 +414,9 @@ const FormTextArea = ({ label, value, onChange, rows = 5, readOnly }) => (
       placeholder={readOnly ? "No content." : `Express your ${label.toLowerCase()}...`}
     />
   </div>
-);
+));
 
-const ListManager = ({ title, icon, items, onChange, readOnly }) => (
+const ListManager = memo(({ title, icon, items, onChange, readOnly }) => (
   <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 flex flex-col h-full shadow-lg">
     <div className="flex items-center justify-between mb-6">
       <h3 className="font-bold text-white flex items-center gap-2">
@@ -462,6 +463,6 @@ const ListManager = ({ title, icon, items, onChange, readOnly }) => (
       {items.length === 0 && <p className="text-center py-6 text-zinc-700 text-xs italic">No items defined.</p>}
     </div>
   </div>
-);
+));
 
 export default ResumeAdmin;

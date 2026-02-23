@@ -131,7 +131,7 @@ const Resume2 = React.forwardRef(({ resumeData }, ref) => {
                 {/* ACHIEVEMENTS (Sequential / Line-by-line) */}
                 {achievements?.length > 0 && (
                     <section>
-                        <h2 className="res-section-head"><img src={resume2Icons[8].achivments} alt={resume2Icons[8].achivments} /> Achievements</h2>
+                        <h2 className="res-section-head"><img src={resume2Icons[8].achievements} alt={resume2Icons[8].achievements} /> Achievements</h2>
                         <ul className="res-list">
                             {achievements.map((item, idx) => (
                                 <li key={idx} style={{ marginBottom: '8px' }}>{item}</li>

@@ -7,5 +7,5 @@ export const resume2Icons = [
     { work: "/images/icons/res2-work-icon.svg", name: "Work Icon" },
     { skill: "/images/icons/res2-skills-icon.svg", name: "Skills Icon" },
     { languages: "/images/icons/res2-language-icon.svg", name: "Languages Icon" },
-    { achivments: "/images/icons/res2-achivements-icon.svg", name: "Achivements Icon" },
+    { achievements: "/images/icons/res2-achivements-icon.svg", name: "Achievements Icon" },
 ]

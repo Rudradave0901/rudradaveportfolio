@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import useAbout from '../../hooks/useAbout';
 import { useAuth } from '../../context/AuthContext';
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
 
 const AboutAdmin = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = checkIsAdmin(user);
     const { aboutData, loading, error, createAbout, updateAbout } = useAbout();
     const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState({

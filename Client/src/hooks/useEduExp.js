@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
 
+/**
+ * Custom hook to manage education and experience data.
+ * @param {boolean} [fetchOnMount=true] - Whether to fetch data when the hook mounts.
+ * @returns {Object} State and methods for handling education/experience data.
+ */
 const useEduExp = (fetchOnMount = true) => {
     const [eduExpData, setEduExpData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -42,6 +47,13 @@ const useEduExp = (fetchOnMount = true) => {
         }
     };
 
+    /**
+     * Edits an existing education or experience record in the backend.
+     * After successful update, it refetches all data.
+     * @param {string} id - The ID of the record to edit.
+     * @param {Object} data - The updated education or experience data.
+     * @returns {Promise<{success: boolean, message: string}>} An object indicating success and a message.
+     */
     const editEduExp = async (id, data) => {
         setLoading(true);
         try {

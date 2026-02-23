@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axiosInstance from "../api/axiosInstance";
+import ProjectService from "../services/Project.service";
 
 const useProjects = (fetchOnMount = true) => {
   const [projects, setProjects] = useState([]);
@@ -11,14 +11,14 @@ const useProjects = (fetchOnMount = true) => {
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/projects");
+      const data = await ProjectService.getAllProjects();
 
-      if (!response.data?.data) {
+      if (!data?.data) {
         setProjects([]);
         return;
       }
 
-      setProjects(response.data.data);
+      setProjects(data.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch projects");
       setProjects([]);
@@ -30,11 +30,7 @@ const useProjects = (fetchOnMount = true) => {
   const addProject = async (formData) => {
     setLoading(true);
     try {
-      await axiosInstance.post("/projects", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await ProjectService.createProject(formData);
       await fetchProjects();
       return { success: true };
     } catch (err) {
@@ -49,11 +45,7 @@ const useProjects = (fetchOnMount = true) => {
   const editProject = async (id, formData) => {
     setLoading(true);
     try {
-      await axiosInstance.put(`/projects/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await ProjectService.updateProject(id, formData);
       await fetchProjects();
       return { success: true };
     } catch (err) {
@@ -68,7 +60,7 @@ const useProjects = (fetchOnMount = true) => {
   const removeProject = async (id) => {
     setLoading(true);
     try {
-      await axiosInstance.delete(`/projects/${id}`);
+      await ProjectService.deleteProject(id);
       await fetchProjects();
       return { success: true };
     } catch (err) {

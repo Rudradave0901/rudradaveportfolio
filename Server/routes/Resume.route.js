@@ -1,6 +1,6 @@
 import express from "express";
 import { createResume, deleteResume, getResume, updateResume } from "../controllers/Resume.controller.js";
-import { protect, authorize } from "../middleweres/auth.middleware.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 

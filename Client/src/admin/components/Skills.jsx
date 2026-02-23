@@ -1,16 +1,20 @@
 import React, { useState, useRef } from "react";
 import useSkills from "../../hooks/useSkills";
 import { useAuth } from "../../context/AuthContext";
+import Modal from "../../components/ui/Modal";
+import FormInput from "../../components/ui/FormInput";
+import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
+import { isAdmin as checkIsAdmin } from "../../utils/authUtils";
+import { API_CONSTANTS } from "../../constants/appConstants";
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = API_CONSTANTS.SERVER_URL;
 
 const Skills = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === "admin";
+    const isAdmin = checkIsAdmin(user);
     const {
         skills,
         loading,
-        error,
         addSkill,
         editSkill,
         removeSkill,
@@ -144,13 +148,7 @@ const Skills = () => {
                     )}
                 </div>
 
-                {loading && !isModalOpen && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div key={i} className="bg-zinc-900/50 rounded-2xl h-32 animate-pulse border border-zinc-800" />
-                        ))}
-                    </div>
-                )}
+                {loading && !isModalOpen && <LoadingSkeleton count={6} />}
 
                 {!loading && skills.length === 0 && (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-3xl border border-dashed border-zinc-800">
@@ -203,127 +201,101 @@ const Skills = () => {
                 </div>
             </div>
 
-            {/* Premium Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto">
-                    <div className="bg-zinc-950 border border-zinc-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] my-auto animate-in fade-in zoom-in duration-200">
-                        <div className="px-8 py-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
-                            <div>
-                                <h3 className="text-2xl font-bold text-white">
-                                    {isEditMode ? "Edit Tool" : "Add New Tool"}
-                                </h3>
-                                <p className="text-sm text-zinc-400 mt-1">Provide the details for the tool.</p>
-                            </div>
-                            <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 transition-colors"
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={isEditMode ? "Edit Tool" : "Add New Tool"}
+                description="Provide the details for the tool."
+            >
+                <form onSubmit={handleSubmit}>
+                    <div className="space-y-6 mb-8">
+                        <div className="flex flex-col items-center mb-6">
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900 hover:bg-zinc-800/50 hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group"
                             >
-                                <i className="fas fa-times"></i>
-                            </button>
+                                {imagePreview ? (
+                                    <>
+                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-contain p-4" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all text-white text-[10px] font-bold">
+                                            Change
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-cloud-upload-alt text-2xl text-zinc-600 mb-1 group-hover:text-cyan-500 transition-colors"></i>
+                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Icon / Logo</span>
+                                    </>
+                                )}
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                onChange={handleImageChange}
+                                className="hidden"
+                                accept="image/*"
+                                required={!isEditMode}
+                            />
+                            <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-widest">Recommended size: 64x64px</p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8">
-                            <div className="space-y-6 mb-8">
-                                <div className="flex flex-col items-center mb-6">
-                                    <div
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900 hover:bg-zinc-800/50 hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group"
-                                    >
-                                        {imagePreview ? (
-                                            <>
-                                                <img src={imagePreview} alt="Preview" className="w-full h-full object-contain p-4" />
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all text-white text-[10px] font-bold">
-                                                    Change
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <i className="fas fa-cloud-upload-alt text-2xl text-zinc-600 mb-1 group-hover:text-cyan-500 transition-colors"></i>
-                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Icon / Logo</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                        accept="image/*"
-                                        required={!isEditMode}
-                                    />
-                                    <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-widest">Recommended size: 64x64px</p>
-                                </div>
+                        <FormInput
+                            label="Tool Name"
+                            name="skillName"
+                            value={formData.skillName}
+                            onChange={handleInputChange}
+                            placeholder="E.g. VS Code, React, Photoshop"
+                            required
+                        />
 
-                                <div>
-                                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Tool Name</label>
-                                    <input
-                                        type="text"
-                                        name="skillName"
-                                        value={formData.skillName}
-                                        onChange={handleInputChange}
-                                        placeholder="E.g. VS Code, React, Photoshop"
-                                        className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
-                                        required
-                                    />
-                                </div>
+                        <FormInput
+                            label="Category / Usage"
+                            name="skillUse"
+                            value={formData.skillUse}
+                            onChange={handleInputChange}
+                            placeholder="E.g. Web Framework, Design Tool"
+                            required
+                        />
 
-                                <div>
-                                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Category / Usage</label>
-                                    <input
-                                        type="text"
-                                        name="skillUse"
-                                        value={formData.skillUse}
-                                        onChange={handleInputChange}
-                                        placeholder="E.g. Web Framework, Design Tool"
-                                        className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Brief Description (Optional)</label>
-                                    <textarea
-                                        name="skillContent"
-                                        value={formData.skillContent}
-                                        onChange={handleInputChange}
-                                        placeholder="What do you use this tool for?"
-                                        rows="3"
-                                        className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none"
-                                        required
-                                    ></textarea>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-8 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(8,145,178,0.3)]"
-                                >
-                                    {loading ? (
-                                        <span className="flex items-center">
-                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Saving...
-                                        </span>
-                                    ) : (
-                                        isEditMode ? "Update Tool" : "Save Tool"
-                                    )}
-                                </button>
-                            </div>
-                        </form>
+                        <FormInput
+                            label="Brief Description (Optional)"
+                            name="skillContent"
+                            value={formData.skillContent}
+                            onChange={handleInputChange}
+                            placeholder="What do you use this tool for?"
+                            isTextArea
+                            required
+                        />
                     </div>
-                </div>
-            )}
+
+                    <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-8 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(8,145,178,0.3)]"
+                        >
+                            {loading ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Saving...
+                                </span>
+                            ) : (
+                                isEditMode ? "Update Tool" : "Save Tool"
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </section>
     );
 };

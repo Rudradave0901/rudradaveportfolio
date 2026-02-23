@@ -1,7 +1,7 @@
 import express from "express";
 import { createBanner, deleteBanner, getBannerData, updateBanner } from "../controllers/Banner.controller.js";
-import { uploadBannerImages } from "../middleweres/BannerUpload.middleware.js";
-import { protect, authorize } from "../middleweres/auth.middleware.js";
+import { uploadBannerImages } from "../middlewares/BannerUpload.middleware.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 

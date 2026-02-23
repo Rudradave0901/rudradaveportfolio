@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axiosInstance from "../api/axiosInstance";
+import SkillService from "../services/Skill.service";
 
 const useSkills = (fetchOnMount = true) => {
     const [skills, setSkills] = useState([]);
@@ -11,14 +11,14 @@ const useSkills = (fetchOnMount = true) => {
         setError(null);
 
         try {
-            const response = await axiosInstance.get("/skills");
+            const data = await SkillService.getAllSkills();
 
-            if (!response.data?.data) {
+            if (!data?.data) {
                 setSkills([]);
                 return;
             }
 
-            setSkills(response.data.data);
+            setSkills(data.data);
         } catch (err) {
             setError(err.response?.data?.message || "Failed to fetch skills");
             setSkills([]);
@@ -30,13 +30,9 @@ const useSkills = (fetchOnMount = true) => {
     const addSkill = async (formData) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/skills", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const data = await SkillService.createSkill(formData);
             await fetchSkills();
-            return { success: true, message: response.data.message };
+            return { success: true, message: data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to create skill";
             setError(message);
@@ -49,13 +45,9 @@ const useSkills = (fetchOnMount = true) => {
     const editSkill = async (id, formData) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.put(`/skills/${id}`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const data = await SkillService.updateSkill(id, formData);
             await fetchSkills();
-            return { success: true, message: response.data.message };
+            return { success: true, message: data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to update skill";
             setError(message);
@@ -68,9 +60,9 @@ const useSkills = (fetchOnMount = true) => {
     const removeSkill = async (id) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.delete(`/skills/${id}`);
+            const data = await SkillService.deleteSkill(id);
             await fetchSkills();
-            return { success: true, message: response.data.message };
+            return { success: true, message: data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to delete skill";
             setError(message);

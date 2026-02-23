@@ -1,144 +1,70 @@
-import { BannerModel } from "../models/Banner.model.js";
-
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
+import BannerService from "../services/Banner.service.js";
 
 // CREATE BANNER DATA
-export const createBanner = async(req, res) => {
-    try {
-        const existingBanner = await BannerModel.findOne();
-
-        if(existingBanner) {
-            return res.status(400).json({
-                success: false,
-                message: "Banner Data Already Exists"    
-            })
-        }        
-
-        if (!req.files?.BannerImage || !req.files?.smallBannerImage) {
-            return res.status(400).json({
-                success: false,
-                message: "Both images are required"
-            })
-        }
-
-        const bannerImageUrl = `/uploads/banners/${req.files.BannerImage[0].filename}`;
-        const smallImageUrl = `/uploads/banners/${req.files.smallBannerImage[0].filename}`;
-
-        const banner = await BannerModel.create({
-            name: req.body.name,
-            headline: req.body.headline,
-            designations: JSON.parse(req.body.designations),
-            bannerImageUrl,
-            smallImageUrl
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Banner Data added sucessfully",
-            data: banner
-        })
-
-
-    } catch (error) {
-        console.log("Error :- ", error);
-        res.status(500).json({
-            success: false,
-            message: "internal server error"
-        });
+export const createBanner = asyncHandler(async (req, res) => {
+    if (!req.files?.BannerImage || !req.files?.smallBannerImage) {
+        throw new ApiError(400, "Both images are required");
     }
-}
 
+    const bannerImageUrl = `/uploads/banners/${req.files.BannerImage[0].filename}`;
+    const smallImageUrl = `/uploads/banners/${req.files.smallBannerImage[0].filename}`;
+
+    const banner = await BannerService.createBanner({
+        name: req.body.name,
+        headline: req.body.headline,
+        designations: JSON.parse(req.body.designations),
+        bannerImageUrl,
+        smallImageUrl
+    });
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, banner, "Banner data added successfully"));
+});
 
 // GET BANNER DATA
-export const getBannerData = async (req, res) => {
-    try {
-        const banner = await BannerModel.findOne(); 
+export const getBannerData = asyncHandler(async (req, res) => {
+    const banner = await BannerService.getBanner();
 
-        if(!banner) {
-            return res.status(404).json({
-                success: false,
-                message: "no data found in Banner"
-            })
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Banner data is fatched",
-            data: banner
-        })
-
-    } catch (error) {
-        console.log("error", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        })
-    }
-}
+    return res
+        .status(200)
+        .json(new ApiResponse(200, banner, "Banner data fetched successfully"));
+});
 
 // DELETE BANNER DATA
-export const deleteBanner = async (req, res) => {
-    const existingBanner = await BannerModel.findOne();
+export const deleteBanner = asyncHandler(async (req, res) => {
+    await BannerService.deleteBanner();
 
-    if (!existingBanner) {
-        return res.status(404).json({
-            success: false,
-            message: "no data found in Banner"
-        })
-    }
+    return res
+        .status(200)
+        .json(new ApiResponse(200, null, "Banner data deleted successfully"));
+});
 
-    const deleteBanner = await BannerModel.deleteOne();
-    res.status(200).json({
-        success: true,
-        message: "Banner Data deleted successfully",
-        data: deleteBanner
-    })
-};
+export const updateBanner = asyncHandler(async (req, res) => {
+    const banner = await BannerService.getBanner();
 
+    const updateData = {
+        name: req.body.name || banner.name,
+        headline: req.body.headline || banner.headline,
+        designations: req.body.designations ? JSON.parse(req.body.designations) : banner.designations
+    };
 
-export const updateBanner = async (req, res) => {
-  try {
-    const banner = await BannerModel.findOne();
-    if (!banner) {
-      return res.status(404).json({
-        success: false,
-        message: "Banner not found"
-      });
-    }
-
-    // update text
-    banner.name = req.body.name || banner.name;
-    banner.headline = req.body.headline || banner.headline;
-    banner.designations = JSON.parse(req.body.designations);
-
-    // update images if new ones uploaded
     if (req.files?.BannerImage) {
-        console.log("comes in BannerImage");
-        
-      banner.bannerImageUrl =
-        `/uploads/banners/${req.files.BannerImage[0].filename}`;
+        BannerService.deleteLocalFile(banner.bannerImageUrl);
+        updateData.bannerImageUrl = `/uploads/banners/${req.files.BannerImage[0].filename}`;
     }
 
     if (req.files?.smallBannerImage) {
-        console.log("comes in smallBannerImage");
-        
-      banner.smallImageUrl =
-        `/uploads/banners/${req.files.smallBannerImage[0].filename}`;
+        BannerService.deleteLocalFile(banner.smallImageUrl);
+        updateData.smallImageUrl = `/uploads/banners/${req.files.smallBannerImage[0].filename}`;
     }
 
-    console.log("BODY:", req.body);
-    console.log("FILES:", req.files);
+    const updatedBanner = await BannerService.updateBanner(updateData);
 
-
-    await banner.save();
-
-    res.json({
-      success: true,
-      message: "Banner updated successfully",
-      data: banner
-    });
-
-  } catch (error) {
-    console.error("Error updating banner:", error);
-    res.status(500).json({ success: false, message: "Failed to update banner" });
-  }
-};
+    return res
+        .status(200)
+        .json(new ApiResponse(200, updatedBanner, "Banner updated successfully"));
+});

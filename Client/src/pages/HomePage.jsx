@@ -18,7 +18,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const HomePage = () => {
 
-  
+
   useGSAP(() => {
     const elements = gsap.utils.toArray('.reveal-up');
 
@@ -26,8 +26,8 @@ const HomePage = () => {
       gsap.to(element, {
         scrollTrigger: {
           trigger: element,
-          start: '-200 bottom',
-          end: 'buttom 80%',
+          start: '-200 bottom', // Trigger starting position
+          end: 'bottom 80%',
           scrub: true
         },
         y: 0,
@@ -36,23 +36,22 @@ const HomePage = () => {
         ease: 'power2.out'
       })
     })
-    
   })
 
   return (
     <>
-        <ReactLenis root>
-            <Header />
-            <main>
-                <Banner />
-                <About />
-                <Skills />
-                <Work />
-                <ExpEducation />
-                <Contact />
-                <Footer />
-            </main>
-        </ReactLenis>
+      <ReactLenis root>
+        <Header />
+        <main>
+          <Banner />
+          <About />
+          <Skills />
+          <Work />
+          <ExpEducation />
+          <Contact />
+          <Footer />
+        </main>
+      </ReactLenis>
     </>
   )
 }

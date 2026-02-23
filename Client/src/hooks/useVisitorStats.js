@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from "../api/axiosInstance";
 
 const useVisitorStats = () => {
     const [stats, setStats] = useState(null);
@@ -8,7 +8,7 @@ const useVisitorStats = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/visitors/stats`, { withCredentials: true });
+            const response = await axiosInstance.get("/visitors/stats");
             if (response.data.success) {
                 setStats(response.data.data);
             }

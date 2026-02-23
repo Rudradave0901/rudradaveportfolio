@@ -1,7 +1,7 @@
 import express from "express"
 import { createskillData, deleteAllSkillData, deleteManySkillData, deleteSkillData, getSkillData, updateskillData } from "../controllers/Skills.controller.js";
-import { uploadSkillImages } from "../middleweres/SkillUpload.middlewere.js";
-import { protect, authorize } from "../middleweres/auth.middleware.js";
+import { uploadSkillImages } from "../middlewares/SkillUpload.middlewere.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 

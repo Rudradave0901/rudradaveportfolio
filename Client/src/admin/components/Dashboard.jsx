@@ -3,10 +3,12 @@ import { useAuth } from '../../context/AuthContext'
 import useVisitorStats from '../../hooks/useVisitorStats';
 import useProjects from '../../hooks/useProjects';
 import useMessages from '../../hooks/useMessages';
+import { formatDate } from '../../utils/dtUtils';
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = checkIsAdmin(user);
     const { stats } = useVisitorStats();
     const { projects } = useProjects();
     const { messages } = useMessages();
@@ -157,7 +159,7 @@ const Dashboard = () => {
                                             <td className="py-4 px-2 font-mono text-zinc-400">{log.ip}</td>
                                             <td className="py-4 px-2 text-zinc-500 truncate max-w-md">{log.userAgent}</td>
                                             <td className="py-4 px-2 text-right text-zinc-600">
-                                                {new Date(log.timestamp).toLocaleString()}
+                                                {formatDate(log.timestamp, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </td>
                                         </tr>
                                     ))}

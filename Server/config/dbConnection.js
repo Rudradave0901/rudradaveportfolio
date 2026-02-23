@@ -1,8 +1,4 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config({
-    path: "./.env"
-});
 
 const connectDB = async () => {
     try {
@@ -11,7 +7,7 @@ const connectDB = async () => {
     } catch (error) {
         console.log("Unable to connect database");
         process.exit(1);
-    } 
+    }
 }
 
 export { connectDB };

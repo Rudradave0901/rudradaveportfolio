@@ -1,118 +1,69 @@
 import { ResumeModel } from "../models/resume.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 /* =========================
    CREATE RESUME (ADMIN)
 ========================= */
-export const createResume = async (req, res) => {
-  try {
-    // Only one resume allowed (like banner)
-    const existingResume = await ResumeModel.findOne();
+export const createResume = asyncHandler(async (req, res) => {
+  // Only one resume allowed (like banner)
+  const existingResume = await ResumeModel.findOne();
 
-    if (existingResume) {
-      return res.status(400).json({
-        success: false,
-        message: "Resume already exists",
-      });
-    }
-
-    const resume = await ResumeModel.create(req.body);
-
-    res.status(201).json({
-      success: true,
-      message: "Resume created successfully",
-      data: resume,
-    });
-  } catch (error) {
-    console.error("Create Resume Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+  if (existingResume) {
+    throw new ApiError(400, "Resume already exists");
   }
-};
+
+  const resume = await ResumeModel.create(req.body);
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, resume, "Resume created successfully"));
+});
 
 /* =========================
    GET RESUME (PUBLIC)
 ========================= */
-export const getResume = async (req, res) => {
-  try {
-    const resume = await ResumeModel.findOne({ isActive: true });
+export const getResume = asyncHandler(async (req, res) => {
+  const resume = await ResumeModel.findOne({ isActive: true });
 
-    if (!resume) {
-      return res.status(404).json({
-        success: false,
-        message: "Resume not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: resume,
-    });
-  } catch (error) {
-      console.error("Get Resume Error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Internal server error",
-      });
+  if (!resume) {
+    throw new ApiError(404, "Resume not found");
   }
-};
 
+  return res
+    .status(200)
+    .json(new ApiResponse(200, resume, "Resume fetched successfully"));
+});
 
+export const deleteResume = asyncHandler(async (req, res) => {
+  const existingResume = await ResumeModel.findOne();
 
-
-export const deleteResume = async (req, res) => {
-    const existingResume = await ResumeModel.findOne();
-
-    if (!existingResume) {
-        return res.status(404).json({
-            success: false,
-            message: "no data found in Resume"
-        })
-    }
-
-    const deleteResume = await ResumeModel.deleteOne();
-    res.status(200).json({
-        success: true,
-        message: "Resume Data deleted successfully",
-        data: deleteResume
-    })
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export const updateResume = async (req, res) => {
-  try {
-    const updatedResume = await ResumeModel.findOneAndUpdate(
-      {},
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Resume updated successfully",
-      data: updatedResume,
-    });
-  } catch (error) {
-    console.error("Update Resume Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update resume",
-    });
+  if (!existingResume) {
+    throw new ApiError(404, "No data found in Resume");
   }
-};
+
+  await ResumeModel.deleteOne();
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Resume Data deleted successfully"));
+});
+
+export const updateResume = asyncHandler(async (req, res) => {
+  const updatedResume = await ResumeModel.findOneAndUpdate(
+    {},
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!updatedResume) {
+    throw new ApiError(404, "Resume not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedResume, "Resume updated successfully"));
+});

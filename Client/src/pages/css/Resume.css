@@ -226,40 +226,11 @@
   top: 3px;
 }
 
-/* ============================= 
-    MEDIEA QUERIES 
-============================= */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* --- 230. MEDIA QUERIES --- */
+/* (Media queries can be added here if needed) */
 
 /* RESET & CORE WRAPPER */
-
 .res-container {
-  /* width: 850px; */
   margin: 0 auto;
   background: #ffffff;
   color: #334155;
@@ -269,17 +240,8 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-@media print {
-  .res-body-wrapper {
-    background: none;
-    padding: 0;
-  }
-
-  .res-container {
-    box-shadow: none;
-    padding: 30px;
-    width: 100%;
-  }
+.res-container img {
+  position: relative;
 }
 
 /* HEADER SECTION */
@@ -432,82 +394,31 @@
 }
 
 .res-lang-badge {
+  position: relative;
   display: inline-block;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  /* background: #f8fafc;
+  border: 1px solid #e2e8f0; */
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
   color: #4f46e5;
   margin: 0 6px 6px 0;
+  z-index: 1;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.res-lang-badge::before {
+  position: absolute;
+  content: '';
+  height: 100%;
+  border-radius: 4px;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  z-index: -1;
+}
 
 .pdf-export .section-title {
   position: relative;

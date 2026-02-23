@@ -1,12 +1,14 @@
 import React, { useState, useRef } from "react";
 import useProjects from "../../hooks/useProjects";
 import { useAuth } from "../../context/AuthContext";
+import { isAdmin as checkIsAdmin } from "../../utils/authUtils";
+import { API_CONSTANTS } from "../../constants/appConstants";
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = API_CONSTANTS.SERVER_URL;
 
 const Projects = () => {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = checkIsAdmin(user);
   const {
     projects,
     loading,

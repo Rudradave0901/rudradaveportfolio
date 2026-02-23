@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils'
 
 const Header = () => {
     const { user, logout } = useAuth();
+    const isAdmin = checkIsAdmin(user);
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -18,7 +20,7 @@ const Header = () => {
                     <h1 id="page-title" className="text-2xl font-bold">Admin Panel</h1>
                     <p className="text-sm text-gray-400 capitalize">
                         Welcome back, {user?.username || 'Rudra'}!
-                        <span className={`ml-3 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md ${user?.role === 'admin' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}`}>
+                        <span className={`ml-3 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md ${isAdmin ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}`}>
                             {user?.role || 'Viewer'}
                         </span>
                     </p>

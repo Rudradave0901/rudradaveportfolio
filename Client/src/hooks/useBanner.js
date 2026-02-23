@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axiosInstance from "../api/axiosInstance";
+import BannerService from "../services/Banner.service";
 
 const useBanner = (fetchOnMount = true) => {
     const [bannerData, setBannerData] = useState(null);
@@ -11,14 +11,14 @@ const useBanner = (fetchOnMount = true) => {
         setError(null);
 
         try {
-            const response = await axiosInstance.get("/banners");
+            const data = await BannerService.getBannerData();
 
-            if (!response.data?.data) {
+            if (!data?.data) {
                 setBannerData(null);
                 return;
             }
 
-            setBannerData(response.data.data);
+            setBannerData(data.data);
         } catch (err) {
             if (err.response?.status !== 404) {
                 setError(err.response?.data?.message || "Failed to fetch banner data");
@@ -32,13 +32,9 @@ const useBanner = (fetchOnMount = true) => {
     const createBanner = async (formData) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/banners", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const data = await BannerService.createBanner(formData);
             await fetchBannerData();
-            return { success: true, message: response.data.message };
+            return { success: true, message: data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to create banner";
             setError(message);
@@ -51,13 +47,9 @@ const useBanner = (fetchOnMount = true) => {
     const updateBanner = async (formData) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.put("/banners", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const data = await BannerService.updateBanner(formData);
             await fetchBannerData();
-            return { success: true, message: response.data.message };
+            return { success: true, message: data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to update banner";
             setError(message);
@@ -70,9 +62,9 @@ const useBanner = (fetchOnMount = true) => {
     const deleteBanner = async () => {
         setLoading(true);
         try {
-            const response = await axiosInstance.delete("/banners");
+            const data = await BannerService.deleteBanner();
             setBannerData(null);
-            return { success: true, message: response.data.message };
+            return { success: true, message: data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to delete banner";
             setError(message);

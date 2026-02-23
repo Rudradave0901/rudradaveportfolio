@@ -23,17 +23,17 @@ const eduExpSchema = mongoose.Schema(
                 type: String,
                 required: true
             },
-            discription: {
+            description: {
                 type: [String],
                 required: true
             },
         }],
-        experince: [{
+        experience: [{
             designation: {
                 type: String,
                 required: true
             },
-            compenyName: {
+            companyName: {
                 type: String,
                 required: true
             },
@@ -49,7 +49,7 @@ const eduExpSchema = mongoose.Schema(
                 type: String,
                 required: true
             },
-            discription: {
+            description: {
                 type: [String],
                 required: true
             },
@@ -61,4 +61,4 @@ const eduExpSchema = mongoose.Schema(
     }
 );
 
-export const eduExpMpdel = mongoose.model("eduExpMpdel", eduExpSchema)
+export const EduExpModel = mongoose.model("EduExp", eduExpSchema);

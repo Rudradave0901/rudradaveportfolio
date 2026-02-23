@@ -1,218 +1,132 @@
 import fs from "fs";
 import path from "path";
 import { SkillsModel } from "../models/Skills.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 // CREATE SKILLS DATA
-export const createskillData = async (req, res) => {
-    try {
+export const createskillData = asyncHandler(async (req, res) => {
+    const skillImageURL = req.files?.skillImageURL ? `/uploads/skills/${req.files.skillImageURL[0].filename}` : undefined;
 
-        const skillImageURL = req.files?.skillImageURL ? `/uploads/skills/${req.files.skillImageURL[0].filename}` : undefined
+    const getData = await SkillsModel.create({
+        skillName: req.body.skillName,
+        skillContent: req.body.skillContent,
+        skillUse: req.body.skillUse,
+        skillImageURL
+    });
 
-        const getData = await SkillsModel.insertMany({
-            skillName: req.body.skillName,
-            skillContent: req.body.skillContent,
-            skillUse: req.body.skillUse,
-            skillImageURL
-        });
-
-        res.status(201).json({
-            success: true,
-            data: getData,
-            message: "Data Created Successfully"
-        })
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
-}
+    return res
+        .status(201)
+        .json(new ApiResponse(201, getData, "Data Created Successfully"));
+});
 
 // GET SKILLS DATA
-export const getSkillData = async (req, res) => {
-    try {
+export const getSkillData = asyncHandler(async (req, res) => {
+    const getData = await SkillsModel.find();
 
-        const getData = await SkillsModel.find()
-
-        if (!getData || getData.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "no data found"
-            })
-        }
-
-        res.status(200).json({
-            success: true,
-            data: getData,
-            message: "Data Fetched Successfully"
-        })
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal srver error"
-        })
+    if (!getData || getData.length === 0) {
+        throw new ApiError(404, "No data found");
     }
-}
 
-export const updateskillData = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const existingSkill = await SkillsModel.findById(id);
+    return res
+        .status(200)
+        .json(new ApiResponse(200, getData, "Data Fetched Successfully"));
+});
 
-        if (!existingSkill) {
-            return res.status(404).json({
-                success: false,
-                message: "Skill not found",
-            });
-        }
+export const updateskillData = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const existingSkill = await SkillsModel.findById(id);
 
-        let skillImageURL = existingSkill.skillImageURL;
+    if (!existingSkill) {
+        throw new ApiError(404, "Skill not found");
+    }
 
-        if (req.files?.skillImageURL) {
-            // Delete old image
-            if (existingSkill.skillImageURL) {
-                const oldImagePath = path.join(
-                    process.cwd(),
-                    existingSkill.skillImageURL.replace(/^\/+/, "")
-                );
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
-                }
+    let skillImageURL = existingSkill.skillImageURL;
+
+    if (req.files?.skillImageURL) {
+        // Delete old image
+        if (existingSkill.skillImageURL) {
+            const oldImagePath = path.join(
+                process.cwd(),
+                existingSkill.skillImageURL.replace(/^\/+/, "")
+            );
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath);
             }
-            skillImageURL = `/uploads/skills/${req.files.skillImageURL[0].filename}`;
         }
-
-        const updatedSkill = await SkillsModel.findByIdAndUpdate(
-            id,
-            {
-                skillName: req.body.skillName || existingSkill.skillName,
-                skillContent: req.body.skillContent || existingSkill.skillContent,
-                skillUse: req.body.skillUse || existingSkill.skillUse,
-                skillImageURL,
-            },
-            { new: true }
-        );
-
-        res.status(200).json({
-            success: true,
-            data: updatedSkill,
-            message: "Skill updated successfully",
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        skillImageURL = `/uploads/skills/${req.files.skillImageURL[0].filename}`;
     }
-};
 
-// =============================================== //
-//      DELETE SKILLS DATA CODE START              //
-// =============================================== //
+    const updatedSkill = await SkillsModel.findByIdAndUpdate(
+        id,
+        {
+            skillName: req.body.skillName || existingSkill.skillName,
+            skillContent: req.body.skillContent || existingSkill.skillContent,
+            skillUse: req.body.skillUse || existingSkill.skillUse,
+            skillImageURL,
+        },
+        { new: true }
+    );
 
+    return res
+        .status(200)
+        .json(new ApiResponse(200, updatedSkill, "Skill updated successfully"));
+});
 
 // DELETE SKILLS DATA (Delete 1 Data at a time)
-export const deleteSkillData = async (req, res) => {
-    try {
+export const deleteSkillData = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const getDataID = await SkillsModel.findById(id);
 
-        const { id } = req.params;
-
-        const getDataID = await SkillsModel.findById(id);
-
-        if (!getDataID) {
-            return res.status(404).json({
-                success: false,
-                message: "Skill not found",
-            });
-        }
-
-        // 2️⃣ Delete image if exists
-        if (getDataID.skillImageURL) {
-            const imagePath = path.join(
-                process.cwd(),
-                getDataID.skillImageURL.replace(/^\/+/, "")
-            );
-
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-        }
-
-        // 3️⃣ Delete DB record
-        await SkillsModel.findByIdAndDelete(id);
-
-        res.status(200).json({
-            success: true,
-            message: "Data Deleted Successfully",
-            // data: getDataID
-        })
-
-    } catch (error) {
-        console.log("cicnjdvuidnhvudnvudvf", error);
-
-        res.status(500).json({
-            success: false,
-            message: error
-        })
+    if (!getDataID) {
+        throw new ApiError(404, "Skill not found");
     }
-}
 
+    // Delete image if exists
+    if (getDataID.skillImageURL) {
+        const imagePath = path.join(
+            process.cwd(),
+            getDataID.skillImageURL.replace(/^\/+/, "")
+        );
+
+        if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+        }
+    }
+
+    // Delete DB record
+    await SkillsModel.findByIdAndDelete(id);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, null, "Data Deleted Successfully"));
+});
 
 // DELETE SKILLS DATA (Delete many Data at a time)
-export const deleteManySkillData = async (req, res) => {
-    try {
+export const deleteManySkillData = asyncHandler(async (req, res) => {
+    const { ids } = req.body;
 
-
-        const { ids } = req.body
-
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Skill IDs are required",
-            });
-        }
-
-        const getDataID = await SkillsModel.deleteMany({
-            _id: { $in: ids },
-        })
-
-        res.status(200).json({
-            success: true,
-            message: "Data Deleted Successfully",
-            data: getDataID,
-            deletedCounts: getDataID.deletedCounts,
-        })
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal srver error"
-        })
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        throw new ApiError(400, "Skill IDs are required");
     }
-}
 
+    const result = await SkillsModel.deleteMany({
+        _id: { $in: ids },
+    });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, result, "Data Deleted Successfully"));
+});
 
 // DELETE SKILLS DATA (Delete all Data at a time)
-export const deleteAllSkillData = async (req, res) => {
-    try {
-
-        const deleteAllData = await SkillsModel.deleteMany({});
-        res.status(200).json({
-            success: true,
-            message: "all Data Deleted Successfully",
-            data: deleteAllData,
-            deletedCounts: deleteAllData.deletedCounts
-        })
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal srver error"
-        })
-    }
-}
+export const deleteAllSkillData = asyncHandler(async (req, res) => {
+    const deleteAllData = await SkillsModel.deleteMany({});
+    return res
+        .status(200)
+        .json(new ApiResponse(200, deleteAllData, "All data deleted successfully"));
+});
 // =============================================== //
 //      DELETE SKILLS DATA CODE END                //
 // =============================================== //

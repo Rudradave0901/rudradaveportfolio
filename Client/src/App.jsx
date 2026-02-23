@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 // Components
 import HomePage from "./pages/HomePage";
 import Resume from "./pages/ResumePage";
-// import ContentUploadSamplee from "./components/contentUploadSample";
 import AdminPage from "./admin/pages/AdminPage";
 import Projects from "./admin/components/Projects";
 import Skills from "./admin/components/Skills";

@@ -1,6 +1,6 @@
 import useSkills from "../hooks/useSkills";
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
 const Skills = () => {
   const { skills, loading, error } = useSkills();

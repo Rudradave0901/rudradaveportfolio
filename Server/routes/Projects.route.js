@@ -1,7 +1,7 @@
 import express from "express";
 import { createdProjectsController, deleteProjectsData, getProjectsController, updateProjectsController } from "../controllers/Projects.controller.js";
-import { uploadProjectsImages } from "../middleweres/ProjectsUpload.middlewere.js";
-import { protect, authorize } from "../middleweres/auth.middleware.js";
+import { uploadProjectsImages } from "../middlewares/ProjectsUpload.middlewere.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 

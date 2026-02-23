@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import useMessages from '../../hooks/useMessages';
 import { useAuth } from '../../context/AuthContext';
+import { formatDate } from '../../utils/dtUtils';
+import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
 
 const Message = () => {
-    const { messages, loading, error, deleteMessage, markAsRead } = useMessages();
+    const { messages, loading, error, pagination, setPage, deleteMessage, markAsRead } = useMessages();
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = checkIsAdmin(user);
     const [selectedMessage, setSelectedMessage] = useState(null);
 
     const handleViewMessage = (msg) => {
@@ -22,7 +24,7 @@ const Message = () => {
         }
     };
 
-    if (loading) return <div className="p-10 text-center text-zinc-500">Loading Inquiries...</div>;
+    if (loading && messages.length === 0) return <div className="p-10 text-center text-zinc-500">Loading Inquiries...</div>;
 
     return (
         <>
@@ -33,11 +35,37 @@ const Message = () => {
                             <h3 className="text-xl font-bold text-white">Contact Inquiries</h3>
                             <p className="text-sm text-zinc-500 mt-1">Manage communications from your portfolio visitors.</p>
                         </div>
+                        {pagination.totalPages > 1 && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-zinc-500 mr-2">
+                                    Page {pagination.page} of {pagination.totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setPage(pagination.page - 1)}
+                                    disabled={pagination.page === 1}
+                                    className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-white disabled:opacity-20 transition-all"
+                                >
+                                    <i className="fas fa-chevron-left text-[10px]"></i>
+                                </button>
+                                <button
+                                    onClick={() => setPage(pagination.page + 1)}
+                                    disabled={pagination.page === pagination.totalPages}
+                                    className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-white disabled:opacity-20 transition-all"
+                                >
+                                    <i className="fas fa-chevron-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {error && <div className="m-8 p-4 bg-red-500/10 border border-red-500/50 text-red-500 rounded-2xl text-sm">{error}</div>}
 
-                    <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
+                    <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar relative">
+                        {loading && (
+                            <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                                <i className="fas fa-spinner fa-spin text-cyan-500"></i>
+                            </div>
+                        )}
                         {messages.length === 0 ? (
                             <div className="p-20 text-center">
                                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-zinc-600">
@@ -63,7 +91,7 @@ const Message = () => {
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest whitespace-nowrap">
-                                                    {new Date(msg.createdAt).toLocaleDateString()}
+                                                    {formatDate(msg.createdAt)}
                                                 </span>
                                                 {isAdmin && (
                                                     <button
@@ -113,7 +141,7 @@ const Message = () => {
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center text-xs text-zinc-600">
-                                    <span>Sent on: {new Date(selectedMessage.createdAt).toLocaleString()}</span>
+                                    <span>Sent on: {formatDate(selectedMessage.createdAt, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                     {isAdmin && (
                                         <button
                                             onClick={(e) => {

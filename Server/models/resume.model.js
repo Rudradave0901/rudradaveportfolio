@@ -63,7 +63,7 @@ const ExperienceSchema = new mongoose.Schema(
     title: { type: String, required: true }, // Frontend Developer @ Company
     startDate: { type: String, required: true },
     endDate: { type: String, default: "Present" },
-    compenyName: { type: String, required: true },
+    companyName: { type: String, required: true },
     location: { type: String, required: true },
     points: { type: [String], required: true },
   },

@@ -1,115 +1,57 @@
 import { AboutModel } from "../models/About.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 // CREATE ABOUTDATA CONTROLLER
-export const createAboutData = async (req, res) => {
-    try {
-        let aboutData = await AboutModel.findOne();
-        if (aboutData) {
-            return res.status(400).json({
-                success: false,
-                message: "about Data is already created"
-            });
-        }
-
-        aboutData = await AboutModel.create(req.body)
-        res.status(201).json({
-            success: true,
-            data: aboutData,
-            message: "About Data Created Successfully"
-        });
-
-    } catch (error) {
-        console.log("Error Creating About Data:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server Error"
-        })
+export const createAboutData = asyncHandler(async (req, res) => {
+    let aboutData = await AboutModel.findOne();
+    if (aboutData) {
+        throw new ApiError(400, "about Data is already created");
     }
-}
 
+    aboutData = await AboutModel.create(req.body);
+    return res
+        .status(201)
+        .json(new ApiResponse(201, aboutData, "About Data Created Successfully"));
+});
 
 // GET ABOUT DATA
-export const getAboutData = async (req, res) => {
-    try {
-        const aboutData = await AboutModel.findOne();
+export const getAboutData = asyncHandler(async (req, res) => {
+    const aboutData = await AboutModel.findOne();
 
-        if (!aboutData) {
-            return res.status(404).json({
-                success: false,
-                message: "Data not found"
-            })
-        }
-
-        res.status(200).json(
-            {
-                success: true,
-                data: aboutData
-            }
-        );
-    } catch (error) {
-        console.error("Error fetching About data:", error);
-        res.status(500).json(
-            {
-                success: false,
-                message: "Server Error"
-            }
-        );
+    if (!aboutData) {
+        throw new ApiError(404, "Data not found");
     }
-};
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, aboutData, "About data fetched successfully"));
+});
 
 // UPDATE ABOUT DATA
-export const updateAboutData = async (req, res) => {
-    try {
-        const aboutData = await AboutModel.findOneAndUpdate({}, req.body, { new: true });
+export const updateAboutData = asyncHandler(async (req, res) => {
+    const aboutData = await AboutModel.findOneAndUpdate({}, req.body, { new: true });
 
-        if (!aboutData) {
-            return res.status(404).json({
-                success: false,
-                message: "Data not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: aboutData,
-            message: "About Data Updated Successfully"
-        });
-
-    } catch (error) {
-        console.log("Error Updating About Data:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server Error"
-        });
+    if (!aboutData) {
+        throw new ApiError(404, "Data not found");
     }
-}
 
+    return res
+        .status(200)
+        .json(new ApiResponse(200, aboutData, "About Data Updated Successfully"));
+});
 
 // DELETE ABOUT DATA
-export const deleteAboutData = async (req, res) => {
-    try {
-        const aboutData = await AboutModel.findOne();
+export const deleteAboutData = asyncHandler(async (req, res) => {
+    const aboutData = await AboutModel.findOne();
 
-        if (!aboutData) {
-            return res.status(400).json({
-                success: false,
-                message: "Data not found"
-            });
-        }
-
-        await AboutModel.deleteOne();
-        res.status(200).json({
-            success: true,
-            message: "Data Deleted Successfully"
-        })
-
-
-    } catch (error) {
-        console.log("internal server error : ", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        })
-
+    if (!aboutData) {
+        throw new ApiError(404, "Data not found");
     }
-}
+
+    await AboutModel.deleteOne();
+    return res
+        .status(200)
+        .json(new ApiResponse(200, null, "Data Deleted Successfully"));
+});

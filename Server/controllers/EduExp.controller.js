@@ -1,84 +1,51 @@
-import { eduExpMpdel } from "../models/EduExp.model.js";
+import { EduExpModel } from "../models/EduExp.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
-export const createEduExpData = async (req, res) => {
-    try {
-        const getData = await eduExpMpdel.create(req.body);
-        res.status(201).json({
-            success: true,
-            data: getData
-        });
-    } catch (error) {
-        console.log("error message :- ", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to create data"
-        });
+/**
+ * Controller for managing Education and Experience data.
+ */
+
+/**
+ * Creates new education/experience data.
+ */
+export const createEduExpData = asyncHandler(async (req, res) => {
+    const getData = await EduExpModel.create(req.body);
+    return res
+        .status(201)
+        .json(new ApiResponse(201, getData, "Data created successfully"));
+});
+
+export const getEduExpData = asyncHandler(async (req, res) => {
+    const getData = await EduExpModel.find();
+    return res
+        .status(200)
+        .json(new ApiResponse(200, getData, "Data fetched successfully"));
+});
+
+export const updateEduExpData = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const updatedData = await EduExpModel.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!updatedData) {
+        throw new ApiError(404, "Data not found");
     }
-}
 
-export const getEduExpData = async (req, res) => {
-    try {
-        const getData = await eduExpMpdel.find();
-        res.status(200).json({
-            success: true,
-            data: getData
-        });
-    } catch (error) {
-        console.log("error message :- ", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch data"
-        });
+    return res
+        .status(200)
+        .json(new ApiResponse(200, updatedData, "Data updated successfully"));
+});
+
+export const deleteEduExpData = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const deletedData = await EduExpModel.findByIdAndDelete(id);
+
+    if (!deletedData) {
+        throw new ApiError(404, "Data not found");
     }
-}
 
-export const updateEduExpData = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updatedData = await eduExpMpdel.findByIdAndUpdate(id, req.body, { new: true });
-
-        if (!updatedData) {
-            return res.status(404).json({
-                success: false,
-                message: "Data not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: updatedData,
-            message: "Data updated successfully"
-        });
-    } catch (error) {
-        console.log("error message :- ", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to update data"
-        });
-    }
-}
-
-export const deleteEduExpData = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedData = await eduExpMpdel.findByIdAndDelete(id);
-
-        if (!deletedData) {
-            return res.status(404).json({
-                success: false,
-                message: "Data not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Data deleted successfully"
-        });
-    } catch (error) {
-        console.log("error message :- ", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to delete data"
-        });
-    }
-}
+    return res
+        .status(200)
+        .json(new ApiResponse(200, null, "Data deleted successfully"));
+});

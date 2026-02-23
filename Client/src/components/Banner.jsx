@@ -6,7 +6,7 @@ import useResume from '../hooks/useResume';
 import { useResumeDownload } from '../hooks/useResumeDownload';
 import ActiveResumeContent from './ResumeTemplates/ActiveResumeContent';
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
 const Banner = () => {
     const { bannerData, loading, error } = useBanner();
@@ -75,7 +75,7 @@ const Banner = () => {
 
                 <div className="hidden lg:block">
                     <figure className='w-full max-w-[480px] ml-auto bg-gradient-to-t from-sky-400 via-25% via-sky-400 to-65% rounded-[60px] overflow-hidden'>
-                        <img src={`${BASE_URL}${bannerData?.bannerImageUrl}`} alt="Banner Main Img" height={800} width={656} className='w-full' />
+                        <img src={`${BASE_URL}${bannerData?.bannerImageUrl}`} alt="Banner Main Img" height={800} width={656} className='w-full' fetchPriority="high" />
                     </figure>
                 </div>
 

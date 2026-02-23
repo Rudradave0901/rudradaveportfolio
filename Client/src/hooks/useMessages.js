@@ -1,16 +1,31 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from "../api/axiosInstance";
 
 const useMessages = () => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+        total: 0
+    });
 
-    const fetchMessages = async () => {
+    const fetchMessages = async (page = 1, limit = 10) => {
+        setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/messages`, { withCredentials: true });
+            const response = await axiosInstance.get(
+                `/messages?page=${page}&limit=${limit}`
+            );
             if (response.data.success) {
                 setMessages(response.data.data);
+                if (response.data.pagination) {
+                    setPagination({
+                        ...response.data.pagination,
+                        total: response.data.total
+                    });
+                }
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to fetch messages');
@@ -21,9 +36,14 @@ const useMessages = () => {
 
     const deleteMessage = async (id) => {
         try {
-            const response = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/messages/${id}`, { withCredentials: true });
+            const response = await axiosInstance.delete(`/messages/${id}`);
             if (response.data.success) {
-                setMessages(messages.filter(msg => msg._id !== id));
+                // If we delete the last message on a page, fetch previous page or refresh
+                if (messages.length === 1 && pagination.page > 1) {
+                    fetchMessages(pagination.page - 1, pagination.limit);
+                } else {
+                    fetchMessages(pagination.page, pagination.limit);
+                }
                 return { success: true };
             }
         } catch (err) {
@@ -33,7 +53,7 @@ const useMessages = () => {
 
     const markAsRead = async (id) => {
         try {
-            const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/messages/${id}`, { isRead: true }, { withCredentials: true });
+            const response = await axiosInstance.put(`/messages/${id}`, { isRead: true });
             if (response.data.success) {
                 setMessages(messages.map(msg => msg._id === id ? { ...msg, isRead: true } : msg));
                 return { success: true };
@@ -44,10 +64,19 @@ const useMessages = () => {
     };
 
     useEffect(() => {
-        fetchMessages();
-    }, []);
+        fetchMessages(pagination.page, pagination.limit);
+    }, [pagination.page]);
 
-    return { messages, loading, error, deleteMessage, markAsRead, refresh: fetchMessages };
+    return {
+        messages,
+        loading,
+        error,
+        pagination,
+        setPage: (page) => setPagination(prev => ({ ...prev, page })),
+        deleteMessage,
+        markAsRead,
+        refresh: () => fetchMessages(pagination.page, pagination.limit)
+    };
 };
 
 export default useMessages;

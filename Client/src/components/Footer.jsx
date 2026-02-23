@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ButtonPrimary } from "./Button";
 import { NAV_LINKS } from "../constants/navigation";
 import useResume from "../hooks/useResume";
+import { getCurrentYear } from "../utils/dtUtils";
 
 const Footer = () => {
     const { resumeData } = useResume();
@@ -94,7 +95,7 @@ const Footer = () => {
                             <img src="/images/logo.svg" alt="Logo" height={40} width={40} className="" />
                         </a>
                         <p className="text-zinc-500 text-sm">
-                            &copy; {new Date().getFullYear()} <span className="text-zinc-200">codeWithRD</span>
+                            &copy; {getCurrentYear()} <span className="text-zinc-200">codeWithRD</span>
                         </p>
                     </div>
                 </div>
