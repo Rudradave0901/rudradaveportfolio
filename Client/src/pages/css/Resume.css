@@ -557,3 +557,19 @@
 .pdf-export .contact-list li img {
   top: 11px;
 }
+
+.pdf-export img {
+  top: 9px;
+}
+
+.pdf-export .res-section-head {
+  padding-bottom: 14px;
+}
+
+.pdf-export ul li::before {
+  top: 14px;
+}
+
+.pdf-export .res-lang-badge::before {
+  top: 7px;
+}
