@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import useSkills from "../../hooks/useSkills";
 import { useAuth } from "../../context/AuthContext";
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = "https://rudradaveportfolio.onrender.com";
 
 const Skills = () => {
     const { user } = useAuth();

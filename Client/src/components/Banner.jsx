@@ -6,7 +6,7 @@ import useResume from '../hooks/useResume';
 import { useResumeDownload } from '../hooks/useResumeDownload';
 import ActiveResumeContent from './ResumeTemplates/ActiveResumeContent';
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = "https://rudradaveportfolio.onrender.com";
 
 const Banner = () => {
     const { bannerData, loading, error } = useBanner();

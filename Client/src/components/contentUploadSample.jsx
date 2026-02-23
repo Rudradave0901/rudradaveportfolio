@@ -276,7 +276,7 @@ const ContentUploadSamplee = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:4000/api/projects",
+        "https://rudradaveportfolio.onrender.com/api/projects",
         formData
       );
 

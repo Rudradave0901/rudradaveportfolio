@@ -1,6 +1,6 @@
 import useSkills from "../hooks/useSkills";
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = "https://rudradaveportfolio.onrender.com";
 
 const Skills = () => {
   const { skills, loading, error } = useSkills();

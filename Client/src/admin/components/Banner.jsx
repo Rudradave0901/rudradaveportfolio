@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import useBanner from '../../hooks/useBanner';
 import { useAuth } from '../../context/AuthContext';
 
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = "https://rudradaveportfolio.onrender.com";
 
 const Banner = () => {
     const { user } = useAuth();
