@@ -1,6 +1,6 @@
 import express from "express"
 import { createskillData, deleteAllSkillData, deleteManySkillData, deleteSkillData, getSkillData, updateskillData } from "../controllers/Skills.controller.js";
-import { uploadSkillImages } from "../middlewares/SkillUpload.middlewere.js";
+import { upload } from "../middlewares/upload.middleware.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -9,14 +9,14 @@ router.get("/", getSkillData)
 router.post("/",
     protect,
     authorize("admin"),
-    uploadSkillImages.fields([
-        { name: "skillImageURL", maxCount: 10 },
+    upload.fields([
+        { name: "skillImageURL", maxCount: 1 },
     ]),
     createskillData)
 router.put("/:id",
     protect,
     authorize("admin"),
-    uploadSkillImages.fields([
+    upload.fields([
         { name: "skillImageURL", maxCount: 1 },
     ]),
     updateskillData)

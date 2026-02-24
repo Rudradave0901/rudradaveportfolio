@@ -29,10 +29,10 @@ const Projects = () => {
     projectURL: "",
     projectImage: null,
     stack: {
-      frontend: [],
-      backend: [],
-      tools: [],
-      tags: [],
+      frontend: "",
+      backend: "",
+      tools: "",
+      tags: "",
     },
   });
 
@@ -42,10 +42,10 @@ const Projects = () => {
       projectURL: "",
       projectImage: null,
       stack: {
-        frontend: [],
-        backend: [],
-        tools: [],
-        tags: [],
+        frontend: "",
+        backend: "",
+        tools: "",
+        tags: "",
       },
     });
     setImagePreview(null);
@@ -69,10 +69,10 @@ const Projects = () => {
       projectURL: project.projectURL || "",
       projectImage: null, // Don't reset image unless changed
       stack: {
-        frontend: project.stack?.frontend || [],
-        backend: project.stack?.backend || [],
-        tools: project.stack?.tools || [],
-        tags: project.stack?.tags || [],
+        frontend: (project.stack?.frontend || []).join(", "),
+        backend: (project.stack?.backend || []).join(", "),
+        tools: (project.stack?.tools || []).join(", "),
+        tags: (project.stack?.tags || []).join(", "),
       },
     });
     setImagePreview(`${BASE_URL}${project.projectImageURL}`);
@@ -100,12 +100,11 @@ const Projects = () => {
 
   const handleStackChange = (category, value) => {
     if (!isAdmin) return;
-    const items = value.split(", ").map((t) => t.trim()).filter(Boolean);
     setFormData((prev) => ({
       ...prev,
       stack: {
         ...prev.stack,
-        [category]: items,
+        [category]: value,
       },
     }));
   };
@@ -120,7 +119,15 @@ const Projects = () => {
     if (formData.projectImage) {
       data.append("projectImageURL", formData.projectImage);
     }
-    data.append("stack", JSON.stringify(formData.stack));
+
+    // Process stack strings back into arrays before sending
+    const processedStack = {
+      frontend: formData.stack.frontend.split(",").map(t => t.trim()).filter(Boolean),
+      backend: formData.stack.backend.split(",").map(t => t.trim()).filter(Boolean),
+      tools: formData.stack.tools.split(",").map(t => t.trim()).filter(Boolean),
+      tags: formData.stack.tags.split(",").map(t => t.trim()).filter(Boolean),
+    };
+    data.append("stack", JSON.stringify(processedStack));
 
     let response;
     if (isEditMode) {
@@ -360,7 +367,7 @@ const Projects = () => {
                     <input
                       type="text"
                       placeholder="React, Next.js, GSAP..."
-                      value={formData.stack.frontend.join(", ")}
+                      value={formData.stack.frontend}
                       onChange={(e) => handleStackChange("frontend", e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                     />
@@ -370,7 +377,7 @@ const Projects = () => {
                     <input
                       type="text"
                       placeholder="Node.js, MongoDB, Redis..."
-                      value={formData.stack.backend.join(", ")}
+                      value={formData.stack.backend}
                       onChange={(e) => handleStackChange("backend", e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                     />
@@ -380,7 +387,7 @@ const Projects = () => {
                     <input
                       type="text"
                       placeholder="Docker, Kubernetes, Figma..."
-                      value={formData.stack.tools.join(", ")}
+                      value={formData.stack.tools}
                       onChange={(e) => handleStackChange("tools", e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                     />
@@ -390,7 +397,7 @@ const Projects = () => {
                     <input
                       type="text"
                       placeholder="E-commerce, Portfolio, SaaS..."
-                      value={formData.stack.tags.join(", ")}
+                      value={formData.stack.tags}
                       onChange={(e) => handleStackChange("tags", e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                     />

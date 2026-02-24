@@ -15,10 +15,12 @@ import Message from "./admin/components/Message";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import GlobalLoader from "./components/ui/GlobalLoader";
 
 function App() {
   return (
     <>
+      <GlobalLoader />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/resume" element={<Resume />} />

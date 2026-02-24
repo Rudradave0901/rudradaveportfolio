@@ -2,13 +2,21 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import ProjectService from "../services/Project.service.js";
+import { optimizeImage } from "../utils/imageOptimizer.js";
+import path from "path";
 
 export const createdProjectsController = asyncHandler(async (req, res) => {
     if (!req.files?.projectImageURL) {
         throw new ApiError(400, "Project image is required");
     }
 
-    const projectImageURL = `/uploads/projects/${req.files.projectImageURL[0].filename}`;
+    const optimized = await optimizeImage(
+        req.files.projectImageURL[0],
+        path.join(process.cwd(), 'uploads/projects'),
+        { width: 1000, quality: 85 }
+    );
+
+    const projectImageURL = optimized.filePath;
     const stack = req.body.stack ? JSON.parse(req.body.stack) : {};
 
     const project = await ProjectService.createProject({
@@ -53,7 +61,13 @@ export const updateProjectsController = asyncHandler(async (req, res) => {
     if (req.files?.projectImageURL) {
         // Delete old image using service utility
         ProjectService.deleteLocalFile(existingProject.projectImageURL);
-        projectImageURL = `/uploads/projects/${req.files.projectImageURL[0].filename}`;
+
+        const optimized = await optimizeImage(
+            req.files.projectImageURL[0],
+            path.join(process.cwd(), 'uploads/projects'),
+            { width: 1000, quality: 85 }
+        );
+        projectImageURL = optimized.filePath;
     }
 
     const stack = req.body.stack ? JSON.parse(req.body.stack) : existingProject.stack;

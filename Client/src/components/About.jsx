@@ -3,7 +3,8 @@ import useAbout from '../hooks/useAbout';
 const About = () => {
     const { aboutData, loading, error } = useAbout();
 
-    if (loading) return <div className="text-center py-20">Loading...</div>;
+    if (!aboutData && !loading) return null;
+    if (!aboutData) return null;
     if (error) return null;
 
     return (

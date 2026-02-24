@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import ProjectService from "../services/Project.service";
+import { useGlobalLoading } from "../context/LoadingContext";
 
 const useProjects = (fetchOnMount = true) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [error, setError] = useState(null);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
+    startLoading('projects');
     setError(null);
 
     try {
@@ -24,8 +27,9 @@ const useProjects = (fetchOnMount = true) => {
       setProjects([]);
     } finally {
       setLoading(false);
+      stopLoading('projects');
     }
-  }, []);
+  }, [startLoading, stopLoading]);
 
   const addProject = async (formData) => {
     setLoading(true);

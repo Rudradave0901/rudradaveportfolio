@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axiosInstance from "../api/axiosInstance";
+import { useGlobalLoading } from "../context/LoadingContext";
 
 const useMessages = () => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { startLoading, stopLoading } = useGlobalLoading();
     const [error, setError] = useState(null);
     const [pagination, setPagination] = useState({
         page: 1,
@@ -12,8 +14,9 @@ const useMessages = () => {
         total: 0
     });
 
-    const fetchMessages = async (page = 1, limit = 10) => {
+    const fetchMessages = useCallback(async (page = 1, limit = 10) => {
         setLoading(true);
+        startLoading('messages');
         try {
             const response = await axiosInstance.get(
                 `/messages?page=${page}&limit=${limit}`
@@ -31,8 +34,9 @@ const useMessages = () => {
             setError(err.response?.data?.message || 'Failed to fetch messages');
         } finally {
             setLoading(false);
+            stopLoading('messages');
         }
-    };
+    }, [startLoading, stopLoading]);
 
     const deleteMessage = async (id) => {
         try {
@@ -65,7 +69,7 @@ const useMessages = () => {
 
     useEffect(() => {
         fetchMessages(pagination.page, pagination.limit);
-    }, [pagination.page]);
+    }, [pagination.page, fetchMessages]);
 
     return {
         messages,

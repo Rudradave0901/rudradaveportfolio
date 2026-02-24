@@ -3,7 +3,7 @@ import useSkills from "../../hooks/useSkills";
 import { useAuth } from "../../context/AuthContext";
 import Modal from "../../components/ui/Modal";
 import FormInput from "../../components/ui/FormInput";
-import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
+import { ButtonPrimary, ButtonOutline } from "../../components/Button";
 import { isAdmin as checkIsAdmin } from "../../utils/authUtils";
 import { API_CONSTANTS } from "../../constants/appConstants";
 
@@ -23,6 +23,7 @@ const Skills = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentSkillId, setCurrentSkillId] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -88,6 +89,7 @@ const Skills = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!isAdmin) return;
+        setIsSubmitting(true);
 
         const data = new FormData();
         data.append("skillName", formData.skillName);
@@ -97,22 +99,26 @@ const Skills = () => {
             data.append("skillImageURL", formData.skillImage);
         }
 
-        let response;
-        if (isEditMode) {
-            response = await editSkill(currentSkillId, data);
-        } else {
-            response = await addSkill(data);
-        }
+        try {
+            let response;
+            if (isEditMode) {
+                response = await editSkill(currentSkillId, data);
+            } else {
+                response = await addSkill(data);
+            }
 
-        if (response?.success) {
-            setIsModalOpen(false);
-            resetForm();
+            if (response?.success) {
+                setIsModalOpen(false);
+                resetForm();
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id) => {
         if (!isAdmin) return;
-        if (window.confirm("Are you sure you want to delete this skill?")) {
+        if (window.confirm("Are you sure you want to delete this tool?")) {
             await removeSkill(id);
         }
     };
@@ -121,34 +127,31 @@ const Skills = () => {
         <section id="section-skills" className="content-section py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                    <div>
+                        <h3 className="text-3xl font-extrabold text-white tracking-tight">
+                            Essential Tools
+                        </h3>
+                        <p className="mt-2 text-zinc-400">
+                            Manage the technologies and tools in your arsenal.
+                        </p>
+                    </div>
                     <div className="flex items-center gap-4">
-                        <div>
-                            <h3 className="text-3xl font-extrabold text-white tracking-tight">
-                                Essential Tools
-                            </h3>
-                            <p className="mt-2 text-zinc-400">
-                                Manage the technologies and tools in your arsenal.
-                            </p>
-                        </div>
                         {!isAdmin && (
                             <div className="px-4 py-1.5 bg-zinc-800 text-zinc-400 text-xs font-bold uppercase tracking-widest rounded-full border border-zinc-700">
                                 <i className="fas fa-eye mr-2"></i>
-                                Read Only Mode
+                                Read Only
                             </div>
                         )}
+                        {isAdmin && (
+                            <ButtonPrimary
+                                onClick={openAddModal}
+                                label="Add New Tool"
+                                icon="add"
+                                classes="!px-5 !py-2.5 shadow-[0_0_20px_rgba(8,145,178,0.3)]"
+                            />
+                        )}
                     </div>
-                    {isAdmin && (
-                        <button
-                            onClick={openAddModal}
-                            className="inline-flex items-center px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(8,145,178,0.3)]"
-                        >
-                            <i className="fas fa-plus mr-2 text-xs"></i>
-                            Add New Tool
-                        </button>
-                    )}
                 </div>
-
-                {loading && !isModalOpen && <LoadingSkeleton count={6} />}
 
                 {!loading && skills.length === 0 && (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-3xl border border-dashed border-zinc-800">
@@ -168,6 +171,7 @@ const Skills = () => {
                                     src={`${BASE_URL}${skill.skillImageURL}`}
                                     alt={skill.skillName}
                                     className="w-full h-full object-contain"
+                                    loading="lazy"
                                 />
                             </div>
                             <div className="z-10">
@@ -179,18 +183,19 @@ const Skills = () => {
                                 </p>
                             </div>
 
-                            {/* Actions Overlay */}
                             {isAdmin && (
                                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                     <button
                                         onClick={() => openEditModal(skill)}
                                         className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-all border border-zinc-700"
+                                        title="Edit"
                                     >
                                         <i className="fas fa-edit text-xs"></i>
                                     </button>
                                     <button
                                         onClick={() => handleDelete(skill._id)}
                                         className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-500 rounded-lg transition-all border border-zinc-700 hover:border-red-500/50"
+                                        title="Delete"
                                     >
                                         <i className="fas fa-trash text-xs"></i>
                                     </button>
@@ -203,16 +208,16 @@ const Skills = () => {
 
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => !isSubmitting && setIsModalOpen(false)}
                 title={isEditMode ? "Edit Tool" : "Add New Tool"}
-                description="Provide the details for the tool."
+                description="Provide the details for the tool below."
             >
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-6 mb-8">
                         <div className="flex flex-col items-center mb-6">
                             <div
-                                onClick={() => fileInputRef.current?.click()}
-                                className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900 hover:bg-zinc-800/50 hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group"
+                                onClick={() => !isSubmitting && fileInputRef.current?.click()}
+                                className={`relative w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900 hover:bg-zinc-800/50 hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center group ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
                             >
                                 {imagePreview ? (
                                     <>
@@ -224,7 +229,7 @@ const Skills = () => {
                                 ) : (
                                     <>
                                         <i className="fas fa-cloud-upload-alt text-2xl text-zinc-600 mb-1 group-hover:text-cyan-500 transition-colors"></i>
-                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Icon / Logo</span>
+                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter text-center px-2">Icon / Logo</span>
                                     </>
                                 )}
                             </div>
@@ -236,7 +241,7 @@ const Skills = () => {
                                 accept="image/*"
                                 required={!isEditMode}
                             />
-                            <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-widest">Recommended size: 64x64px</p>
+                            <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-widest text-center">SVG or Transparent PNG recommended</p>
                         </div>
 
                         <FormInput
@@ -246,6 +251,7 @@ const Skills = () => {
                             onChange={handleInputChange}
                             placeholder="E.g. VS Code, React, Photoshop"
                             required
+                            disabled={isSubmitting}
                         />
 
                         <FormInput
@@ -255,6 +261,7 @@ const Skills = () => {
                             onChange={handleInputChange}
                             placeholder="E.g. Web Framework, Design Tool"
                             required
+                            disabled={isSubmitting}
                         />
 
                         <FormInput
@@ -265,34 +272,21 @@ const Skills = () => {
                             placeholder="What do you use this tool for?"
                             isTextArea
                             required
+                            disabled={isSubmitting}
                         />
                     </div>
 
                     <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
-                        <button
-                            type="button"
+                        <ButtonOutline
                             onClick={() => setIsModalOpen(false)}
-                            className="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="px-8 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(8,145,178,0.3)]"
-                        >
-                            {loading ? (
-                                <span className="flex items-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Saving...
-                                </span>
-                            ) : (
-                                isEditMode ? "Update Tool" : "Save Tool"
-                            )}
-                        </button>
+                            label="Cancel"
+                            disabled={isSubmitting}
+                        />
+                        <ButtonPrimary
+                            label={isEditMode ? "Update Tool" : "Save Tool"}
+                            isLoading={isSubmitting}
+                            classes="!px-8 shadow-[0_0_20px_rgba(8,145,178,0.3)]"
+                        />
                     </div>
                 </form>
             </Modal>

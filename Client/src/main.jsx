@@ -8,12 +8,15 @@ import './index.css'
 import 'lenis/dist/lenis.css'
 
 import { AuthProvider } from './context/AuthContext.jsx';
+import { LoadingProvider } from './context/LoadingContext.jsx';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <LoadingProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </LoadingProvider>
   </BrowserRouter>
 );
 // 101923869012

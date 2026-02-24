@@ -4,10 +4,20 @@ import { SkillsModel } from "../models/Skills.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { optimizeImage } from "../utils/imageOptimizer.js";
 
 // CREATE SKILLS DATA
 export const createskillData = asyncHandler(async (req, res) => {
-    const skillImageURL = req.files?.skillImageURL ? `/uploads/skills/${req.files.skillImageURL[0].filename}` : undefined;
+    let skillImageURL;
+
+    if (req.files?.skillImageURL) {
+        const optimized = await optimizeImage(
+            req.files.skillImageURL[0],
+            path.join(process.cwd(), 'uploads/skills'),
+            { width: 300 }
+        );
+        skillImageURL = optimized.filePath;
+    }
 
     const getData = await SkillsModel.create({
         skillName: req.body.skillName,
@@ -55,7 +65,13 @@ export const updateskillData = asyncHandler(async (req, res) => {
                 fs.unlinkSync(oldImagePath);
             }
         }
-        skillImageURL = `/uploads/skills/${req.files.skillImageURL[0].filename}`;
+
+        const optimized = await optimizeImage(
+            req.files.skillImageURL[0],
+            path.join(process.cwd(), 'uploads/skills'),
+            { width: 300 }
+        );
+        skillImageURL = optimized.filePath;
     }
 
     const updatedSkill = await SkillsModel.findByIdAndUpdate(

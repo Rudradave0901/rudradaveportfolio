@@ -1,6 +1,6 @@
 import express from "express";
 import { createdProjectsController, deleteProjectsData, getProjectsController, updateProjectsController } from "../controllers/Projects.controller.js";
-import { uploadProjectsImages } from "../middlewares/ProjectsUpload.middlewere.js";
+import { upload } from "../middlewares/upload.middleware.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -10,14 +10,14 @@ router.get("/", getProjectsController)
 router.post("/",
     protect,
     authorize("admin"),
-    uploadProjectsImages.fields([
+    upload.fields([
         { name: "projectImageURL", maxCount: 1 }
     ]),
     createdProjectsController)
 router.put("/:id",
     protect,
     authorize("admin"),
-    uploadProjectsImages.fields([
+    upload.fields([
         { name: "projectImageURL", maxCount: 1 }
     ]),
     updateProjectsController)

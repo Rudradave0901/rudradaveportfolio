@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import SkillService from "../services/Skill.service";
+import { useGlobalLoading } from "../context/LoadingContext";
 
 const useSkills = (fetchOnMount = true) => {
     const [skills, setSkills] = useState([]);
     const [loading, setLoading] = useState(false);
+    const { startLoading, stopLoading } = useGlobalLoading();
     const [error, setError] = useState(null);
 
     const fetchSkills = useCallback(async () => {
         setLoading(true);
+        startLoading('skills');
         setError(null);
 
         try {
@@ -24,8 +27,9 @@ const useSkills = (fetchOnMount = true) => {
             setSkills([]);
         } finally {
             setLoading(false);
+            stopLoading('skills');
         }
-    }, []);
+    }, [startLoading, stopLoading]);
 
     const addSkill = async (formData) => {
         setLoading(true);

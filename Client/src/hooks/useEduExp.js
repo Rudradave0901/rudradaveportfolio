@@ -1,18 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { useGlobalLoading } from "../context/LoadingContext";
 
-/**
- * Custom hook to manage education and experience data.
- * @param {boolean} [fetchOnMount=true] - Whether to fetch data when the hook mounts.
- * @returns {Object} State and methods for handling education/experience data.
- */
 const useEduExp = (fetchOnMount = true) => {
     const [eduExpData, setEduExpData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const { startLoading, stopLoading } = useGlobalLoading();
     const [error, setError] = useState(null);
 
     const fetchEduExp = useCallback(async () => {
         setLoading(true);
+        startLoading('edu-exp');
         setError(null);
 
         try {
@@ -29,8 +27,9 @@ const useEduExp = (fetchOnMount = true) => {
             setEduExpData([]);
         } finally {
             setLoading(false);
+            stopLoading('edu-exp');
         }
-    }, []);
+    }, [startLoading, stopLoading]);
 
     const addEduExp = async (data) => {
         setLoading(true);

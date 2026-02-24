@@ -3,8 +3,7 @@ import useEduExp from '../hooks/useEduExp';
 const ExpEducation = () => {
     const { eduExpData, loading, error } = useEduExp();
 
-    if (loading) return <div className="text-center py-20">Loading...</div>;
-    if (error) return null;
+    if (!eduExpData || eduExpData.length === 0) return null;
 
     return (
         <>

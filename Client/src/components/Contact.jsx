@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import useResume from '../hooks/useResume';
+import { ButtonPrimary } from './Button';
 import { isValidEmail } from '../utils/validationUtils';
 import { GITHUB_ICON, LINKEDIN_ICON } from '../constants/icons';
 import { UI_CONSTANTS } from '../constants/appConstants';
@@ -200,17 +201,12 @@ const Contact = () => {
             </div>
           )}
 
-          <button
+          <ButtonPrimary
             type="submit"
-            disabled={requestStatus.isLoading}
-            className="btn btn-primary [&]:max-w-full w-full justify-center reveal-up disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {requestStatus.isLoading ? (
-              <span className="flex items-center gap-2">
-                <i className="fas fa-spinner fa-spin"></i> Sending...
-              </span>
-            ) : 'Submit'}
-          </button>
+            label="Submit"
+            isLoading={requestStatus.isLoading}
+            classes="[!w-full] justify-center reveal-up"
+          />
 
         </form>
 

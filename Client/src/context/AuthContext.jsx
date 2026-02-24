@@ -1,15 +1,22 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import AuthService from "../services/Auth.service";
+import { useGlobalLoading } from "./LoadingContext";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const { startLoading, stopLoading } = useGlobalLoading();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        checkUserLoggedIn();
+        const initAuth = async () => {
+            startLoading('auth-check');
+            await checkUserLoggedIn();
+            stopLoading('auth-check');
+        };
+        initAuth();
 
         const handleUnauthorized = () => {
             setUser(null);
@@ -17,14 +24,22 @@ export const AuthProvider = ({ children }) => {
 
         window.addEventListener('unauthorized', handleUnauthorized);
         return () => window.removeEventListener('unauthorized', handleUnauthorized);
-    }, []);
+    }, [startLoading, stopLoading]);
 
     const checkUserLoggedIn = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setLoading(false);
+            return;
+        }
+
         try {
             const data = await AuthService.getMe();
             setUser(data.data);
         } catch (err) {
             setUser(null);
+            // Optionally remove invalid token
+            localStorage.removeItem("token");
         } finally {
             setLoading(false);
         }

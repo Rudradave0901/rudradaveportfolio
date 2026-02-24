@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import BannerService from "../services/Banner.service";
+import { useGlobalLoading } from "../context/LoadingContext";
 
 const useBanner = (fetchOnMount = true) => {
     const [bannerData, setBannerData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const { startLoading, stopLoading } = useGlobalLoading();
     const [error, setError] = useState(null);
 
     const fetchBannerData = useCallback(async () => {
         setLoading(true);
+        startLoading('banner');
         setError(null);
 
         try {
@@ -26,8 +29,9 @@ const useBanner = (fetchOnMount = true) => {
             setBannerData(null);
         } finally {
             setLoading(false);
+            stopLoading('banner');
         }
-    }, []);
+    }, [startLoading, stopLoading]);
 
     const createBanner = async (formData) => {
         setLoading(true);

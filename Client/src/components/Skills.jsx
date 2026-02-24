@@ -5,8 +5,7 @@ const BASE_URL = import.meta.env.VITE_SERVER_URL;
 const Skills = () => {
   const { skills, loading, error } = useSkills();
 
-  if (loading) return <div className="text-center py-20">Loading skills...</div>;
-  if (error) return null;
+  if (!skills || skills.length === 0) return null;
   return (
     <section className="section" id="skills">
       <div className="container">

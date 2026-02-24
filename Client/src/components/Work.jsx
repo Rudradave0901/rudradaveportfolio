@@ -17,12 +17,6 @@ const Work = () => {
           My <span>Portfolio</span> Highlights :
         </h2>
 
-        {loading && (
-          <div className="flex justify-center items-center h-40">
-            <p className="text-zinc-400">Loading projects...</p>
-          </div>
-        )}
-
         {error && (
           <div className="flex justify-center items-center h-40">
             <p className="text-red-400">{error}</p>

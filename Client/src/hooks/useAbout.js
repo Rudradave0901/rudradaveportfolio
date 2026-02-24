@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { useGlobalLoading } from "../context/LoadingContext";
 
 const useAbout = (fetchOnMount = true) => {
     const [aboutData, setAboutData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const { startLoading, stopLoading } = useGlobalLoading();
     const [error, setError] = useState(null);
 
     const fetchAboutData = useCallback(async () => {
         setLoading(true);
+        startLoading('about');
         setError(null);
 
         try {
@@ -26,8 +29,9 @@ const useAbout = (fetchOnMount = true) => {
             setAboutData(null);
         } finally {
             setLoading(false);
+            stopLoading('about');
         }
-    }, []);
+    }, [startLoading, stopLoading]);
 
     const createAbout = async (data) => {
         setLoading(true);

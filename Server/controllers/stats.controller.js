@@ -17,7 +17,7 @@ export const submitMessage = asyncHandler(async (req, res) => {
 
     const newMessage = await Message.create({ name, email, message });
 
-    // Optional: Send Email notification via SMTP
+    // Send Email notification asynchronously (don't block the response)
     if (process.env.SMTP_HOST && process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
@@ -27,6 +27,12 @@ export const submitMessage = asyncHandler(async (req, res) => {
                 user: process.env.SMTP_EMAIL,
                 pass: process.env.SMTP_PASSWORD,
             },
+            family: 4,
+            connectionTimeout: 5000, // Reduced timeout
+            socketTimeout: 5000,
+            tls: {
+                rejectUnauthorized: false
+            }
         });
 
         const mailOptions = {
@@ -35,15 +41,22 @@ export const submitMessage = asyncHandler(async (req, res) => {
             subject: `New Message from ${name}`,
             text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
             html: `
-                <h3>New Contact Form Submission</h3>
-                <p><strong>Name:</strong> ${name}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Message:</strong></p>
-                <p>${message}</p>
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                    <h2 style="color: #0891b2;">New Contact Form Submission</h2>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <p><strong>Message:</strong></p>
+                        <p style="white-space: pre-wrap;">${message}</p>
+                    </div>
+                </div>
             `,
         };
 
-        await transporter.sendMail(mailOptions);
+        // Fire and forget, catch errors internally
+        transporter.sendMail(mailOptions).catch(err => {
+            console.error("SMTP Error:", err.message);
+        });
     }
 
     return res
