@@ -11,6 +11,7 @@ const Signup = () => {
     });
     const { register, error } = useAuth();
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,15 +21,35 @@ const Signup = () => {
         e.preventDefault();
         try {
             await register(formData);
-            navigate("/");
+            setIsSubmitting(true);
+            setTimeout(() => {
+                window.location.href = "/admin";
+            }, 1500);
         } catch (err) {
+            setIsSubmitting(false);
             // Error handled by context
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
-            <div className="max-w-md w-full bg-[#111] p-8 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-sm">
+        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4 relative overflow-hidden">
+            {/* Success Loader Overlay */}
+            {isSubmitting && (
+                <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-500">
+                    <div className="relative">
+                        <div className="w-20 h-20 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <i className="fas fa-user-check text-2xl text-emerald-500 animate-pulse"></i>
+                        </div>
+                    </div>
+                    <h3 className="mt-6 text-xl font-bold text-white tracking-widest uppercase animate-pulse">
+                        Creating Account...
+                    </h3>
+                    <p className="mt-2 text-white/50 text-sm">Setting up your personal dashboard</p>
+                </div>
+            )}
+
+            <div className={`max-w-md w-full bg-[#111] p-8 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-sm transition-all duration-500 ${isSubmitting ? 'scale-90 opacity-0 blur-2xl' : 'scale-100 opacity-100 blur-0'}`}>
                 <div className="text-center mb-10">
                     <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
                     <p className="text-white/50">Join us to explore more</p>

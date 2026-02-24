@@ -2,7 +2,7 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const Aside = () => {
+const Aside = ({ isOpen, toggleSidebar }) => {
   const { user } = useAuth();
 
   const linkClass = ({ isActive }) =>
@@ -14,9 +14,16 @@ const Aside = () => {
       {/* <!-- Sidebar --> */}
       <aside
         id="sidebar"
-        className="fixed inset-y-0 left-0 w-64 sidebar z-50 transform -translate-x-full md:translate-x-0"
+        className={`fixed inset-y-0 left-0 w-64 sidebar z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
         <div className="p-6 h-full relative flex flex-col">
+          {/* Close button for mobile */}
+          <button
+            onClick={toggleSidebar}
+            className="md:hidden absolute top-6 right-6 text-zinc-400 hover:text-white"
+          >
+            <i className="fas fa-times text-xl"></i>
+          </button>
           {/* LOGO */}
           <div className="flex items-center gap-3 mb-10">
             <div className="w-8 h-8 rounded-full bg-[#00AEEF] flex items-center justify-center">

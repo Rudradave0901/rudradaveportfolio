@@ -24,7 +24,7 @@ const Skills = () => {
           {skills.map((skill) => (
             <div key={skill._id} className="flex items-center gap-3 ring-2 ring-inset ring-zinc-50/10 rounded-2xl p-3">
               <figure className="w-12 h-12 p-2 bg-zinc-700/50 rounded-lg">
-                <img src={`${BASE_URL}${skill.skillImageURL}`} alt={skill.skillName} width={32} height={32} />
+                <img src={skill.skillImageURL ? `${BASE_URL}${skill.skillImageURL}` : "/images/placeholder.svg"} alt={skill.skillName} width={32} height={32} />
               </figure>
 
               <div>

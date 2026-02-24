@@ -36,7 +36,7 @@ const Work = () => {
                 <article className="rounded-2xl p-2">
 
                   <img
-                    src={`${BASE_URL}${project.projectImageURL}`}
+                    src={project.projectImageURL ? `${BASE_URL}${project.projectImageURL}` : "/images/placeholder.svg"}
                     alt={project.projectName}
                     loading="lazy"
                     className="h-44 w-full rounded-xl object-cover"

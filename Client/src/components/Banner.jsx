@@ -12,7 +12,7 @@ const Banner = () => {
     const { bannerData, loading, error } = useBanner();
 
     if (loading) return <div className="text-center py-20">Loading...</div>;
-    if (error) return null;
+    if (error || !bannerData) return null;
 
     return (
         <section id='home' className='pt-28 lg:pt-36 pb-20'>
