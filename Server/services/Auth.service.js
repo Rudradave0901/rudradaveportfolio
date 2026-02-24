@@ -34,14 +34,13 @@ class AuthService {
     }
 
     getCookieOptions() {
-        const options = {
+        const isProduction = process.env.NODE_ENV === "production";
+        return {
             expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
         };
-
-        return options;
     }
 }
 

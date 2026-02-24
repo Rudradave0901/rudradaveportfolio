@@ -32,9 +32,10 @@ export const login = asyncHandler(async (req, res) => {
 
 // @desc    Logout user / clear cookie
 export const logout = asyncHandler(async (req, res) => {
+    const options = AuthService.getCookieOptions();
     res.cookie("token", "none", {
+        ...options,
         expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true,
     });
 
     return res
