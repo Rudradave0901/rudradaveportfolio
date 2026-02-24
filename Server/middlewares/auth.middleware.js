@@ -21,13 +21,19 @@ export const protect = async (req, res, next) => {
     if (!token) {
         return res.status(401).json({
             success: false,
-            message: "Not authorized to access this route",
+            message: "Not authorized to access this route, token issue",
         });
     }
+
+    console.log("token is hereeeee", token);
+
 
     try {
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        console.log("decoded", decoded);
+
 
         req.user = await User.findById(decoded.id);
 
