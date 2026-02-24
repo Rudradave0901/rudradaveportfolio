@@ -34,7 +34,8 @@ export const AuthProvider = ({ children }) => {
         try {
             setError(null);
             const data = await AuthService.signup(userData);
-            setUser(data.user);
+            setUser(data.data);
+            if (data.data.token) localStorage.setItem("token", data.data.token);
             return data;
         } catch (err) {
             setError(err.response?.data?.message || "Registration failed");
@@ -46,7 +47,8 @@ export const AuthProvider = ({ children }) => {
         try {
             setError(null);
             const data = await AuthService.login(userData.email, userData.password);
-            setUser(data.user);
+            setUser(data.data);
+            if (data.data.token) localStorage.setItem("token", data.data.token);
             return data;
         } catch (err) {
             setError(err.response?.data?.message || "Login failed");
@@ -58,6 +60,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await AuthService.logout();
             setUser(null);
+            localStorage.removeItem("token");
         } catch (err) {
             console.error("Logout failed", err);
         }

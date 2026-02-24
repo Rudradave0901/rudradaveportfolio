@@ -17,6 +17,8 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(o => o.trim().replace(/\/$/, "")) : [];
 
 app.use(cors({
