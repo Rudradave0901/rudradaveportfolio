@@ -115,9 +115,9 @@ const Resume1 = React.forwardRef(({ resumeData }, ref) => {
 
                     <div className="section-contents-wrap">
                         <h2 className="section-title">Work Experience</h2>
-                        {experience?.map((job, index) => (
+                        {[...(experience || [])].reverse().map((job, index) => (
                             <article className="job-card" key={index}>
-                                <div className="job-title">{job.title} @ {job.compenyName} ( {job.location} ) | {job.startDate} - {job.endDate}</div>
+                                <div className="job-title">{job.title} @ {job.companyName} ( {job.location} ) | {job.startDate} - {job.endDate}</div>
                                 <ul className="job-details">
                                     {job.points.map((point, i) => (
                                         <li key={i}>

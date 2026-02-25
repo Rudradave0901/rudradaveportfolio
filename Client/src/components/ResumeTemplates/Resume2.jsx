@@ -62,14 +62,14 @@ const Resume2 = React.forwardRef(({ resumeData }, ref) => {
                 {experience?.length > 0 && (
                     <section>
                         <h2 className="res-section-head"><img src={resume2Icons[5].work} alt={resume2Icons[5].work} /> Work Experience</h2>
-                        {experience.map((job, idx) => (
+                        {[...(experience || [])].reverse().map((job, idx) => (
                             <div key={idx} className="res-item">
                                 <div className="res-item-row">
                                     <span className="res-item-name">{job.title}</span>
                                     <span className="res-item-date">{job.startDate} — {job.endDate}</span>
                                 </div>
                                 <div className="res-item-sub">
-                                    <span>{job.compenyName}</span>
+                                    <span>{job.companyName}</span>
                                     <span style={{ fontWeight: 400, color: '#94a3b8' }}>{job.location}</span>
                                 </div>
                                 <ul className="res-list">
