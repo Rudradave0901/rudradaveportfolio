@@ -4,49 +4,86 @@
  * @param {Document} clonedDoc - The cloned document from html2canvas.
  */
 export const processClonedDoc = (clonedDoc) => {
-    // 1. Process all elements to remove 'oklch' from inline/computed styles
+    // Create a temporary canvas to convert colors
+    const canvas = clonedDoc.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const convertToHex = (colorStr) => {
+        if (!colorStr || !colorStr.includes('oklch')) return colorStr;
+        try {
+            ctx.fillStyle = colorStr;
+            const converted = ctx.fillStyle;
+            // If it returns 'oklch' string (unsupported in some canvas contexts), use a fallback
+            if (typeof converted === 'string' && converted.includes('oklch')) {
+                return '#4f46e5';
+            }
+            return converted;
+        } catch (e) {
+            return '#4f46e5';
+        }
+    };
+
+    // 1. Process all elements to move styles to inline hex (highest priority)
     const elements = clonedDoc.getElementsByTagName('*');
+    const props = ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke', 'outlineColor'];
+
     for (let i = 0; i < elements.length; i++) {
         const el = elements[i];
         const style = window.getComputedStyle(el);
 
-        ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke', 'border-color', 'outline-color'].forEach(prop => {
+        props.forEach(prop => {
             const value = style[prop];
-            if (value && value.includes('oklch')) {
-                // Default fallbacks to prevent crash
-                if (prop.includes('color')) {
-                    if (el.classList.contains('text-indigo-600') || el.classList.contains('text-indigo-700')) {
-                        el.style.setProperty(prop, '#4f46e5', 'important');
-                    } else if (el.classList.contains('text-slate-900')) {
-                        el.style.setProperty(prop, '#0f172a', 'important');
-                    } else {
-                        el.style.setProperty(prop, '#333333', 'important');
-                    }
-                }
-                if (prop.includes('backgroundColor')) {
-                    if (el.classList.contains('bg-indigo-600')) {
-                        el.style.setProperty(prop, '#4f46e5', 'important');
-                    } else {
-                        el.style.setProperty(prop, '#ffffff', 'important');
-                    }
-                }
-                if (prop.includes('borderColor') || prop.includes('border-color')) {
-                    el.style.setProperty(prop, '#e2e8f0', 'important');
-                }
+            if (value && typeof value === 'string' && value.includes('oklch')) {
+                el.style.setProperty(prop, convertToHex(value), 'important');
             }
         });
 
-        if (style.height === 'auto') {
+        // Fix potential height issues
+        if (style.height === 'auto' && el.offsetHeight > 0) {
+            el.style.height = el.offsetHeight + 'px';
+        }
+
+        if (el.tagName === 'IMG') {
+            el.style.width = el.offsetWidth + 'px';
             el.style.height = el.offsetHeight + 'px';
         }
     }
 
-    // 2. Aggressively remove oklch from all style tags in the cloned doc
-    const styles = clonedDoc.getElementsByTagName('style');
-    for (let style of styles) {
+    // 2. Process <style> tags to replace oklch (prevents crash in html2canvas parser)
+    const styleTags = clonedDoc.getElementsByTagName('style');
+    for (let i = 0; i < styleTags.length; i++) {
+        const style = styleTags[i];
         if (style.innerHTML.includes('oklch')) {
-            // Replace all oklch colors with a safe hex value (indigo/slate mid-tones)
+            // Replace oklch(...) with a safe hex color
             style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, '#4f46e5');
         }
     }
+
+    // 3. Selectively handle <link> tags to preserve fonts/icons while avoiding oklch in main bundle
+    const linkTags = Array.from(clonedDoc.getElementsByTagName('link'));
+    linkTags.forEach(link => {
+        if (link.rel === 'stylesheet') {
+            const href = link.href || '';
+            // If it's the main bundle (often /src/main.css or similar in dev, or a hashed name in prod)
+            // and NOT a known safe resource like FontAwesome or Google Fonts
+            if (!href.includes('font-awesome') && !href.includes('googleapis') && !href.includes('cdnjs')) {
+                // In production, the main stylesheet will likely contain oklch from Tailwind v4.
+                // html2canvas will crash on it. We must remove it and rely on the inline styles we set.
+                link.remove();
+            }
+        }
+    });
+
+    // 4. Add global resets
+    const overrideStyle = clonedDoc.createElement('style');
+    overrideStyle.innerHTML = `
+        * { box-sizing: border-box !important; }
+        body { background-color: white !important; }
+        /* Reset any lingering oklch variables */
+        :root { 
+            --tw-ring-color: #4f46e5 !important;
+            --tw-shadow-color: rgba(0,0,0,0.1) !important;
+        }
+    `;
+    clonedDoc.head.appendChild(overrideStyle);
 };
