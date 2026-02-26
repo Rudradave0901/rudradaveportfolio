@@ -33,3 +33,40 @@ export const getRelativeTime = (date) => {
 export const getCurrentYear = () => {
     return new Date().getFullYear();
 };
+
+/**
+ * Sorts an array of objects by a date field in descending order (newest first).
+ * Handles 'startDate', 'year', 'date', etc.
+ * @param {Array} items - The array to sort.
+ * @param {string} dateField - The field to use for sorting (default: 'startDate').
+ * @returns {Array} - Sorted array.
+ */
+export const sortItemsByDate = (items, dateField = 'startDate') => {
+    if (!items || !Array.isArray(items)) return [];
+
+    const parseDate = (dateVal) => {
+        if (!dateVal) return 0;
+        const str = dateVal.toString().toLowerCase().trim();
+        if (str === 'present' || str === 'current') return new Date().getTime();
+
+        // Handle numeric years specifically (e.g. 2023)
+        if (/^\d{4}$/.test(str)) return new Date(str, 0, 1).getTime();
+
+        const date = new Date(dateVal);
+        return isNaN(date.getTime()) ? 0 : date.getTime();
+    };
+
+    return [...items].sort((a, b) => {
+        const timeA = parseDate(a[dateField]);
+        const timeB = parseDate(b[dateField]);
+
+        // If start dates are equal, sort by end date if available
+        if (timeB === timeA && a.endDate && b.endDate) {
+            const endTimeA = parseDate(a.endDate);
+            const endTimeB = parseDate(b.endDate);
+            return endTimeB - endTimeA;
+        }
+
+        return timeB - timeA;
+    });
+};

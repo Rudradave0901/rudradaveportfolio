@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import '../../pages/css/Resume.css';
+import { sortItemsByDate } from '../../utils/dtUtils';
 
 const Resume1 = React.forwardRef(({ resumeData }, ref) => {
     if (!resumeData) return null;
@@ -14,6 +15,8 @@ const Resume1 = React.forwardRef(({ resumeData }, ref) => {
         experience,
         achievements
     } = resumeData;
+
+    const sortedExperience = useMemo(() => sortItemsByDate(experience), [experience]);
 
     return (
         <div className="resume-page-parent" ref={ref}>
@@ -115,7 +118,7 @@ const Resume1 = React.forwardRef(({ resumeData }, ref) => {
 
                     <div className="section-contents-wrap">
                         <h2 className="section-title">Work Experience</h2>
-                        {[...(experience || [])].reverse().map((job, index) => (
+                        {sortedExperience.map((job, index) => (
                             <article className="job-card" key={index}>
                                 <div className="job-title">{job.title} @ {job.companyName} ( {job.location} ) | {job.startDate} - {job.endDate}</div>
                                 <ul className="job-details">

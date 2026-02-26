@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import '../../pages/css/Resume.css';
 import { resume2Icons } from "../../constants/commonIcons";
+import { sortItemsByDate } from "../../utils/dtUtils";
 
 const Resume2 = React.forwardRef(({ resumeData }, ref) => {
     if (!resumeData) return null;
@@ -16,6 +17,9 @@ const Resume2 = React.forwardRef(({ resumeData }, ref) => {
         education,
         achievements
     } = resumeData;
+
+    const sortedExperience = useMemo(() => sortItemsByDate(experience), [experience]);
+    const sortedEducation = useMemo(() => sortItemsByDate(education, 'year'), [education]);
 
     return (
         <div className="res-body-wrapper">
@@ -62,7 +66,7 @@ const Resume2 = React.forwardRef(({ resumeData }, ref) => {
                 {experience?.length > 0 && (
                     <section>
                         <h2 className="res-section-head"><img src={resume2Icons[5].work} alt={resume2Icons[5].work} /> Work Experience</h2>
-                        {[...(experience || [])].reverse().map((job, idx) => (
+                        {sortedExperience.map((job, idx) => (
                             <div key={idx} className="res-item">
                                 <div className="res-item-row">
                                     <span className="res-item-name">{job.title}</span>
@@ -86,7 +90,7 @@ const Resume2 = React.forwardRef(({ resumeData }, ref) => {
                 {education?.length > 0 && (
                     <section>
                         <h2 className="res-section-head"><GraduationCap size={16} /> Education</h2>
-                        {education.map((edu, idx) => (
+                        {sortedEducation.map((edu, idx) => (
                             <div key={idx} className="res-item">
                                 <div className="res-item-row">
                                     <span className="res-item-name">{edu.degree}</span>

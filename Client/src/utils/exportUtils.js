@@ -1,21 +1,25 @@
-/**
- * Utility to process a cloned document during html2canvas export.
- * Specifically handles 'oklch' color fallbacks and height adjustments.
- * @param {Document} clonedDoc - The cloned document from html2canvas.
- */
 export const processClonedDoc = (clonedDoc) => {
-    // Create a temporary canvas to convert colors
-    const canvas = clonedDoc.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    // 1. Force desktop layout dimensions in the cloned document
+    const container = clonedDoc.querySelector('.resume-container-main');
+    if (container) {
+        container.style.width = '1200px';
+        container.style.minWidth = '1200px';
+        container.style.display = 'block';
+    }
 
+    clonedDoc.body.style.width = '1200px';
+    clonedDoc.body.style.backgroundColor = 'white';
+
+    // 2. Helper to convert OKLCH to Hex (Fallback)
+    const canvas = document.createElement('canvas'); // Use original window's canvas for reliability
+    const ctx = canvas.getContext('2d');
     const convertToHex = (colorStr) => {
         if (!colorStr || !colorStr.includes('oklch')) return colorStr;
         try {
             ctx.fillStyle = colorStr;
             const converted = ctx.fillStyle;
-            // If it returns 'oklch' string (unsupported in some canvas contexts), use a fallback
             if (typeof converted === 'string' && converted.includes('oklch')) {
-                return '#4f46e5';
+                return '#4f46e5'; // Default indigo
             }
             return converted;
         } catch (e) {
@@ -23,67 +27,71 @@ export const processClonedDoc = (clonedDoc) => {
         }
     };
 
-    // 1. Process all elements to move styles to inline hex (highest priority)
-    const elements = clonedDoc.getElementsByTagName('*');
-    const props = ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke', 'outlineColor'];
-
-    for (let i = 0; i < elements.length; i++) {
-        const el = elements[i];
-        const style = window.getComputedStyle(el);
-
-        props.forEach(prop => {
-            const value = style[prop];
-            if (value && typeof value === 'string' && value.includes('oklch')) {
-                el.style.setProperty(prop, convertToHex(value), 'important');
-            }
-        });
-
-        // Fix potential height issues
-        if (style.height === 'auto' && el.offsetHeight > 0) {
-            el.style.height = el.offsetHeight + 'px';
-        }
-
-        if (el.tagName === 'IMG') {
-            el.style.width = el.offsetWidth + 'px';
-            el.style.height = el.offsetHeight + 'px';
-        }
-    }
-
-    // 2. Process <style> tags to replace oklch (prevents crash in html2canvas parser)
-    const styleTags = clonedDoc.getElementsByTagName('style');
-    for (let i = 0; i < styleTags.length; i++) {
-        const style = styleTags[i];
-        if (style.innerHTML.includes('oklch')) {
-            // Replace oklch(...) with a safe hex color
-            style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, '#4f46e5');
-        }
-    }
-
-    // 3. Selectively handle <link> tags to preserve fonts/icons while avoiding oklch in main bundle
+    // 3. Instead of removing stylesheets, inline them and replace oklch 
+    // This preserves all layout and formatting.
     const linkTags = Array.from(clonedDoc.getElementsByTagName('link'));
     linkTags.forEach(link => {
         if (link.rel === 'stylesheet') {
             const href = link.href || '';
-            // If it's the main bundle (often /src/main.css or similar in dev, or a hashed name in prod)
-            // and NOT a known safe resource like FontAwesome or Google Fonts
+            // Only process main bundle/application styles
             if (!href.includes('font-awesome') && !href.includes('googleapis') && !href.includes('cdnjs')) {
-                // In production, the main stylesheet will likely contain oklch from Tailwind v4.
-                // html2canvas will crash on it. We must remove it and rely on the inline styles we set.
-                link.remove();
+                try {
+                    // Find the original stylesheet in the main window
+                    const sheet = Array.from(document.styleSheets).find(s => s.href === link.href);
+                    if (sheet) {
+                        let cssText = '';
+                        try {
+                            const rules = sheet.cssRules || sheet.rules;
+                            if (rules) {
+                                for (let i = 0; i < rules.length; i++) {
+                                    cssText += rules[i].cssText + '\n';
+                                }
+                            }
+                        } catch (e) {
+                            // Cross-origin restriction might hit here, though shouldn't for local bundle
+                            console.warn("Could not read cssRules for", href, e);
+                        }
+
+                        if (cssText) {
+                            const styleTag = clonedDoc.createElement('style');
+                            // Replace all oklch() occurrences in the CSS text
+                            styleTag.innerHTML = cssText.replace(/oklch\([^)]+\)/g, (match) => convertToHex(match));
+                            clonedDoc.head.appendChild(styleTag);
+                            link.remove(); // Remove the link once replaced with safe inline CSS
+                        }
+                    }
+                } catch (err) {
+                    console.error("Failed to process stylesheet", href, err);
+                }
             }
         }
     });
 
-    // 4. Add global resets
-    const overrideStyle = clonedDoc.createElement('style');
-    overrideStyle.innerHTML = `
-        * { box-sizing: border-box !important; }
-        body { background-color: white !important; }
-        /* Reset any lingering oklch variables */
-        :root { 
-            --tw-ring-color: #4f46e5 !important;
-            --tw-shadow-color: rgba(0,0,0,0.1) !important;
+    // 4. Process existing <style> tags
+    const styleTags = clonedDoc.getElementsByTagName('style');
+    for (let i = 0; i < styleTags.length; i++) {
+        const style = styleTags[i];
+        if (style.innerHTML.includes('oklch')) {
+            style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, (match) => convertToHex(match));
         }
-    `;
-    clonedDoc.head.appendChild(overrideStyle);
+    }
+
+    // 5. Final element pass for miscellaneous issues
+    const elements = clonedDoc.getElementsByTagName('*');
+    for (let i = 0; i < elements.length; i++) {
+        const el = elements[i];
+
+        // Ensure image dimensions are fixed
+        if (el.tagName === 'IMG') {
+            const rect = el.getBoundingClientRect();
+            if (rect.width > 0) el.style.width = rect.width + 'px';
+            if (rect.height > 0) el.style.height = rect.height + 'px';
+        }
+
+        // Fix any remaining oklch in inline styles
+        const inlineStyle = el.getAttribute('style');
+        if (inlineStyle && inlineStyle.includes('oklch')) {
+            el.setAttribute('style', inlineStyle.replace(/oklch\([^)]+\)/g, (match) => convertToHex(match)));
+        }
+    }
 };
