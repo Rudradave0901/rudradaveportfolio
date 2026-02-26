@@ -55,7 +55,7 @@ const Banner = () => {
 
                     <div className="flex items-center gap-3">
                         <ButtonPrimary
-                            herf={'/resume?action=download'}
+                            herf={`${BASE_URL}/api/resume/Rudra_Dave_Resume.pdf`}
                             target={'_blank'}
                             label="Download CV"
                             iconImg="/images/downloadIcon.svg"

@@ -10,7 +10,8 @@ const ButtonPrimary = ({
   classes = "",
   onClick,
   disabled,
-  isLoading
+  isLoading,
+  download
 }) => {
   const content = (
     <span className="flex items-center justify-center gap-2">
@@ -34,7 +35,7 @@ const ButtonPrimary = ({
   );
 
   return herf ? (
-    <a href={herf} target={target} className={`btn btn-primary ${classes} ${isLoading ? 'pointer-events-none opacity-80' : ''}`}>
+    <a href={herf} target={target} download={download} className={`btn btn-primary ${classes} ${isLoading ? 'pointer-events-none opacity-80' : ''}`}>
       {content}
     </a>
   ) : (
@@ -65,7 +66,8 @@ const ButtonOutline = ({
   classes = "",
   onClick,
   disabled,
-  isLoading
+  isLoading,
+  download
 }) => {
   const content = (
     <span className="flex items-center justify-center gap-2">
@@ -89,7 +91,7 @@ const ButtonOutline = ({
   );
 
   return herf ? (
-    <a href={herf} target={target} className={`btn btn-outline ${classes} ${isLoading ? 'pointer-events-none opacity-80' : ''}`}>
+    <a href={herf} target={target} download={download} className={`btn btn-outline ${classes} ${isLoading ? 'pointer-events-none opacity-80' : ''}`}>
       {content}
     </a>
   ) : (

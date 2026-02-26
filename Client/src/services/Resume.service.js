@@ -15,6 +15,15 @@ class ResumeService {
         const response = await axiosInstance.put("/resume", data);
         return response.data;
     }
+
+    async uploadResumePDF(formData) {
+        const response = await axiosInstance.post("/resume/upload-pdf", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    }
 }
 
 export default new ResumeService();

@@ -66,5 +66,39 @@ export const useResumeDownload = (resumeRef, resumeData) => {
         }
     };
 
-    return { isExporting, handleDownloadPDF, handleDownloadImage };
+    const generatePDFBlob = async () => {
+        if (!resumeRef.current || !resumeData) return null;
+        try {
+            resumeRef.current.classList.add("pdf-export");
+            const canvas = await html2canvas(resumeRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+                windowWidth: 1200,
+                scrollY: 0,
+                onclone: (clonedDoc) => processClonedDoc(clonedDoc)
+            });
+            const imgData = canvas.toDataURL('image/png', 1.0);
+
+            const pdfWidth = 210;
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: [pdfWidth, pdfHeight]
+            });
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            return pdf.output('blob');
+        } catch (err) {
+            console.error("PDF Blob generation failed:", err);
+            return null;
+        } finally {
+            resumeRef.current.classList.remove("pdf-export");
+        }
+    };
+
+    return { isExporting, handleDownloadPDF, handleDownloadImage, generatePDFBlob };
 };

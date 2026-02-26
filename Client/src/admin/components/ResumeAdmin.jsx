@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import useResume from '../../hooks/useResume';
 import { useAuth } from '../../context/AuthContext';
 import { isAdmin as checkIsAdmin } from '../../utils/authUtils';
+import { useResumeDownload } from '../../hooks/useResumeDownload';
+import ActiveResumeContent from '../../components/ResumeTemplates/ActiveResumeContent';
+import ResumeService from '../../services/Resume.service';
+import '../../pages/css/Resume.css';
 
 const ResumeAdmin = () => {
   const { user } = useAuth();
@@ -10,20 +14,49 @@ const ResumeAdmin = () => {
   const [activeTab, setActiveTab] = useState("header");
   const [isSaving, setIsSaving] = useState(false);
 
+  // PDF Generation Ref and Hook
+  const resumeRef = useRef(null);
+  const { generatePDFBlob } = useResumeDownload(resumeRef, resumeData);
+
   const handleUpdate = useCallback(async () => {
     if (!isAdmin) return;
     setIsSaving(true);
-    const result = resumeData._id
-      ? await updateResume(resumeData)
-      : await createResume(resumeData);
 
-    if (result.success) {
-      alert(result.message);
-    } else {
-      alert(result.message);
+    try {
+      const result = resumeData._id
+        ? await updateResume(resumeData)
+        : await createResume(resumeData);
+
+      if (result.success) {
+        // Automatically generate and upload PDF after successful save
+        console.log("Generating updated PDF...");
+
+        // Short delay to ensure any layout changes are reflected in the DOM
+        setTimeout(async () => {
+          try {
+            const pdfBlob = await generatePDFBlob();
+            if (pdfBlob) {
+              const formData = new FormData();
+              formData.append('resume', pdfBlob, 'resume.pdf');
+              await ResumeService.uploadResumePDF(formData);
+              console.log("PDF updated successfully on server.");
+            }
+          } catch (pdfErr) {
+            console.error("Auto PDF update failed:", pdfErr);
+          }
+        }, 500);
+
+        alert(result.message + "\n\nNote: PDF CV has been regenerated and is now active on the banner.");
+      } else {
+        alert(result.message);
+      }
+    } catch (err) {
+      alert("An unexpected error occurred while saving.");
+      console.error(err);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
-  }, [isAdmin, resumeData, updateResume, createResume]);
+  }, [isAdmin, resumeData, updateResume, createResume, generatePDFBlob]);
 
   const navTabs = useMemo(() => [
     { id: 'header', label: 'Identity & About', icon: 'fa-user-circle' },
@@ -380,6 +413,13 @@ const ResumeAdmin = () => {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Hidden Resume Component for PDF Generation */}
+      <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', pointerEvents: 'none' }}>
+        <div className="resume-container-main" style={{ width: '1200px', background: 'white' }}>
+          <ActiveResumeContent ref={resumeRef} resumeData={resumeData} />
         </div>
       </div>
     </section>

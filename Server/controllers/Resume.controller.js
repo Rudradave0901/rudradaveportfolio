@@ -2,6 +2,8 @@ import { ResumeModel } from "../models/resume.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import fs from "fs";
+import path from "path";
 
 /* =========================
    CREATE RESUME (ADMIN)
@@ -66,4 +68,60 @@ export const updateResume = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, updatedResume, "Resume updated successfully"));
+});
+
+/* =========================
+   UPLOAD RESUME PDF (ADMIN)
+========================= */
+export const uploadResumePDF = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new ApiError(400, "PDF file is required");
+  }
+
+  const resumeDir = path.join("uploads", "resume");
+  const fileName = "resume.pdf";
+  const filePath = path.join(resumeDir, fileName);
+  const tempPath = path.join(resumeDir, `resume_temp_${Date.now()}.pdf`);
+
+  // Ensure directory exists
+  if (!fs.existsSync(resumeDir)) {
+    fs.mkdirSync(resumeDir, { recursive: true });
+  }
+
+  try {
+    // Write new file to temporary location first (safe replacement)
+    fs.writeFileSync(tempPath, req.file.buffer);
+
+    // If writing temp file succeeded, move it to the final location
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath); // Delete old file
+    }
+    fs.renameSync(tempPath, filePath);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { url: `/uploads/resume/${fileName}?t=${Date.now()}` }, "Resume PDF generated and stored successfully"));
+  } catch (error) {
+    // Cleanup temp file if it exists
+    if (fs.existsSync(tempPath)) {
+      try { fs.unlinkSync(tempPath); } catch (e) { }
+    }
+    throw new ApiError(500, "Failed to save PDF file: " + error.message);
+  }
+});
+
+/* =========================
+   DOWNLOAD RESUME PDF (PUBLIC)
+========================= */
+export const downloadResumePDF = asyncHandler(async (req, res) => {
+  const filePath = path.resolve("uploads", "resume", "resume.pdf");
+
+  if (!fs.existsSync(filePath)) {
+    // If not found, we could potentially redirect to /resume?action=download
+    // as a fallback, but per requirements we want to serve the stored file.
+    throw new ApiError(404, "Resume PDF file not found. Please contact the administrator.");
+  }
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.sendFile(filePath);
 });
