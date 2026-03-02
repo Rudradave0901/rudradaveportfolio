@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import useProjects from "../hooks/useProjects";
 
 /* ======================================================
@@ -13,9 +14,25 @@ const Work = () => {
     <section className="section min-h-screen scroll-mt-28" id="work">
       <div className="container">
 
-        <h2 className="section-title mb-7 reveal-up">
-          My <span>Portfolio</span> Highlights :
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 reveal-up">
+          <h2 className="section-title">
+            My <span>Portfolio</span> Highlights :
+          </h2>
+
+          {projects.length > 0 && (
+            <Link
+              to="/projects"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline flex items-center gap-2 group"
+            >
+              View More Projects
+              <span className="material-symbols-rounded group-hover:translate-x-1 transition-transform" aria-hidden="true">
+                arrow_forward
+              </span>
+            </Link>
+          )}
+        </div>
 
         {error && (
           <div className="flex justify-center items-center h-40">
@@ -25,7 +42,7 @@ const Work = () => {
 
         {!loading && !error && (
           <div className="grid gap-x-4 gap-y-5 grid-cols-[repeat(auto-fill,_minmax(280px,1fr))]">
-            {projects.map((project) => (
+            {projects.slice(0, 6).map((project) => (
               <div key={project._id || project.projectName} className={`relative p-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700/50 active:bg-zinc-700/60 ring-1 ring-inset ring-zinc-50/5 transition-colors`}>
                 <article className="rounded-2xl p-2">
 
