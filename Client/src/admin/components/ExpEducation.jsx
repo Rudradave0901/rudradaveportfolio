@@ -15,12 +15,12 @@ const ExpEducation = () => {
     const [currentDocId, setCurrentDocId] = useState(null);
 
     const [formData, setFormData] = useState({
-        title: '', // courseName or designation
-        organization: '', // instituteName or companyName
+        title: '',
+        organization: '',
         startDate: '',
         endDate: '',
         location: '',
-        description: '' // comma separated string for input
+        description: ['']
     });
 
     const resetForm = () => {
@@ -30,7 +30,7 @@ const ExpEducation = () => {
             startDate: '',
             endDate: '',
             location: '',
-            description: ''
+            description: ['']
         });
     };
 
@@ -54,7 +54,7 @@ const ExpEducation = () => {
             startDate: item.startDate,
             endDate: item.endDate,
             location: item.location,
-            description: (item.description || []).join(', ')
+            description: item.description && item.description.length > 0 ? [...item.description] : ['']
         });
         setIsModalOpen(true);
     };
@@ -69,7 +69,7 @@ const ExpEducation = () => {
             startDate: formData.startDate,
             endDate: formData.endDate,
             location: formData.location,
-            description: formData.description.split(',').map(s => s.trim()).filter(Boolean)
+            description: formData.description.map(s => s.trim()).filter(Boolean)
         };
 
         // If no document exists, create one
@@ -108,6 +108,25 @@ const ExpEducation = () => {
         updatedDoc[type].splice(index, 1);
 
         await editEduExp(docId, updatedDoc);
+    };
+
+    const handleDescriptionChange = (index, value) => {
+        const newDesc = [...formData.description];
+        newDesc[index] = value;
+        setFormData({ ...formData, description: newDesc });
+    };
+
+    const addDescriptionRow = () => {
+        setFormData({ ...formData, description: [...formData.description, ''] });
+    };
+
+    const removeDescriptionRow = (index) => {
+        if (formData.description.length <= 1) {
+            setFormData({ ...formData, description: [''] });
+        } else {
+            const newDesc = formData.description.filter((_, i) => i !== index);
+            setFormData({ ...formData, description: newDesc });
+        }
     };
 
     if (loading && !isModalOpen) return <div className="p-10 text-center">Loading...</div>;
@@ -283,14 +302,40 @@ const ExpEducation = () => {
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Description (Comma separated)</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    rows="3"
-                                    className="w-full px-4 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:border-cyan-500 transition-all resize-none"
-                                />
+                            <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="flex items-center justify-between mb-3 sticky top-0 bg-zinc-950 z-10 py-1">
+                                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest">Description / Achievements</label>
+                                    <button
+                                        type="button"
+                                        onClick={addDescriptionRow}
+                                        className="text-[10px] px-2 py-1 bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 rounded-md hover:bg-cyan-500 hover:text-white transition-all font-bold uppercase tracking-tighter"
+                                    >
+                                        <i className="fas fa-plus mr-1"></i> Add Point
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {formData.description.map((desc, idx) => (
+                                        <div key={idx} className="flex gap-2 group">
+                                            <div className="relative flex-1">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-600 font-bold">{idx + 1}.</span>
+                                                <input
+                                                    type="text"
+                                                    value={desc}
+                                                    onChange={(e) => handleDescriptionChange(idx, e.target.value)}
+                                                    className="w-full pl-8 pr-4 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-sm focus:outline-none focus:border-cyan-500 transition-all placeholder:text-zinc-700"
+                                                    placeholder="Enter achievement or responsibility..."
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeDescriptionRow(idx)}
+                                                className="w-9 h-9 flex-shrink-0 flex items-center justify-center bg-zinc-900 border border-zinc-800 text-zinc-600 hover:text-red-500 hover:border-red-500/30 rounded-lg transition-all"
+                                            >
+                                                <i className="fas fa-times text-xs"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2 rounded-lg bg-zinc-800 text-white font-medium hover:bg-zinc-700 transition-all">Cancel</button>

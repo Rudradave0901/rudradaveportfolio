@@ -47,19 +47,21 @@ const Work = () => {
                       {project.stack && Object.keys(project.stack).length > 0 && (
                         <div className="mt-3 space-y-3">
                           {Object.entries(project.stack).map(([group, items]) => (
-                            <div key={group}>
-                              <h4 className="mb-2 text-xs uppercase tracking-wider text-zinc-500">
-                                {group} :
-                              </h4>
+                            items && items.length > 0 && (
+                              <div key={group}>
+                                <h4 className="mb-2 text-xs uppercase tracking-wider text-zinc-500">
+                                  {group} :
+                                </h4>
 
-                              <div className="flex flex-wrap gap-2">
-                                {items.map((tech) => (
-                                  <span key={tech} className="rounded-md border border-zinc-700/60 bg-zinc-800/60 px-2.5 py-0.5 text-xs text-zinc-300 hover:border-sky-400 hover:text-sky-400 transition-colors">
-                                    {tech}
-                                  </span>
-                                ))}
+                                <div className="flex flex-wrap gap-2">
+                                  {items.map((tech) => (
+                                    <span key={tech} className="rounded-md border border-zinc-700/60 bg-zinc-800/60 px-2.5 py-0.5 text-xs text-zinc-300 hover:border-sky-400 hover:text-sky-400 transition-colors">
+                                      {tech}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
+                            )
                           ))}
                         </div>
                       )}
