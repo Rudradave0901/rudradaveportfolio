@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 // Components
 import HomePage from "./pages/HomePage";
 import Resume from "./pages/ResumePage";
+import ProjectsPage from "./pages/ProjectsPage";
 import AdminPage from "./admin/pages/AdminPage";
 import Projects from "./admin/components/Projects";
 import Skills from "./admin/components/Skills";
@@ -24,6 +25,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/resume" element={<Resume />} />
+        <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
