@@ -27,6 +27,7 @@ const Projects = () => {
   const [formData, setFormData] = useState({
     projectName: "",
     projectURL: "",
+    category: "",
     projectImage: null,
     stack: {
       frontend: "",
@@ -40,6 +41,7 @@ const Projects = () => {
     setFormData({
       projectName: "",
       projectURL: "",
+      category: "",
       projectImage: null,
       stack: {
         frontend: "",
@@ -67,6 +69,7 @@ const Projects = () => {
     setFormData({
       projectName: project.projectName || "",
       projectURL: project.projectURL || "",
+      category: project.category || "",
       projectImage: null, // Don't reset image unless changed
       stack: {
         frontend: (project.stack?.frontend || []).join(", "),
@@ -116,6 +119,7 @@ const Projects = () => {
     const data = new FormData();
     data.append("projectName", formData.projectName);
     data.append("projectURL", formData.projectURL);
+    data.append("category", formData.category);
     if (formData.projectImage) {
       data.append("projectImageURL", formData.projectImage);
     }
@@ -213,9 +217,10 @@ const Projects = () => {
 
               {/* Content */}
               <div className="p-6 flex-grow">
-                <h4 className="text-xl font-bold text-white mb-2 group-hover:text-sky-400 transition-colors">
+                <h4 className="text-xl font-bold text-white mb-1 group-hover:text-sky-400 transition-colors">
                   {project.projectName}
                 </h4>
+                <p className="text-xs font-medium text-sky-400/80 mb-3">{project.category}</p>
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {(project.stack?.tags || []).slice(0, 3).map((tag) => (
@@ -316,6 +321,21 @@ const Projects = () => {
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                       required
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Category</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all appearance-none cursor-pointer"
+                      required
+                    >
+                      <option value="" disabled className="bg-zinc-900">Select Category</option>
+                      <option value="UI designs" className="bg-zinc-900">UI designs</option>
+                      <option value="React Projects" className="bg-zinc-900">React Projects</option>
+                      <option value="Full stack Projects" className="bg-zinc-900">Full stack Projects</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Project Link</label>

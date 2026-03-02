@@ -24,6 +24,7 @@ export const createdProjectsController = asyncHandler(async (req, res) => {
         projectURL: req.body.projectURL,
         projectImageURL,
         stack,
+        category: req.body.category,
     });
 
     return res
@@ -75,6 +76,7 @@ export const updateProjectsController = asyncHandler(async (req, res) => {
     const updatedProject = await ProjectService.updateProject(id, {
         projectName: req.body.projectName || existingProject.projectName,
         projectURL: req.body.projectURL || existingProject.projectURL,
+        category: req.body.category || existingProject.category,
         projectImageURL,
         stack,
     });
