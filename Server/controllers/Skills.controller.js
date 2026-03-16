@@ -1,5 +1,5 @@
-import fs from "fs";
 import path from "path";
+import { deleteFromCloudinary } from "../utils/cloudinary.js";
 import { SkillsModel } from "../models/Skills.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -57,13 +57,7 @@ export const updateskillData = asyncHandler(async (req, res) => {
     if (req.files?.skillImageURL) {
         // Delete old image
         if (existingSkill.skillImageURL) {
-            const oldImagePath = path.join(
-                process.cwd(),
-                existingSkill.skillImageURL.replace(/^\/+/, "")
-            );
-            if (fs.existsSync(oldImagePath)) {
-                fs.unlinkSync(oldImagePath);
-            }
+            await deleteFromCloudinary(existingSkill.skillImageURL);
         }
 
         const optimized = await optimizeImage(
@@ -101,14 +95,7 @@ export const deleteSkillData = asyncHandler(async (req, res) => {
 
     // Delete image if exists
     if (getDataID.skillImageURL) {
-        const imagePath = path.join(
-            process.cwd(),
-            getDataID.skillImageURL.replace(/^\/+/, "")
-        );
-
-        if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-        }
+        await deleteFromCloudinary(getDataID.skillImageURL);
     }
 
     // Delete DB record

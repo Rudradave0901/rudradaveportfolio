@@ -37,8 +37,8 @@ const Banner = () => {
                 designations: (bannerData.designations || []).join(', '),
             });
             setPreviews({
-                banner: bannerData.bannerImageUrl ? `${BASE_URL}${bannerData.bannerImageUrl}` : null,
-                small: bannerData.smallImageUrl ? `${BASE_URL}${bannerData.smallImageUrl}` : null
+                banner: bannerData.bannerImageUrl ? (bannerData.bannerImageUrl.startsWith('http') ? bannerData.bannerImageUrl : `${BASE_URL}${bannerData.bannerImageUrl}`) : null,
+                small: bannerData.smallImageUrl ? (bannerData.smallImageUrl.startsWith('http') ? bannerData.smallImageUrl : `${BASE_URL}${bannerData.smallImageUrl}`) : null
             });
         }
     }, [bannerData]);

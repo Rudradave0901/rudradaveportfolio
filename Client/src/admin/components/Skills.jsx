@@ -63,7 +63,7 @@ const Skills = () => {
             skillUse: skill.skillUse || "",
             skillImage: null,
         });
-        setImagePreview(`${BASE_URL}${skill.skillImageURL}`);
+        setImagePreview(skill.skillImageURL?.startsWith('http') ? skill.skillImageURL : `${BASE_URL}${skill.skillImageURL}`);
         setIsModalOpen(true);
     };
 
@@ -168,7 +168,7 @@ const Skills = () => {
                         >
                             <div className="w-14 h-14 p-3 bg-zinc-800 rounded-xl group-hover:scale-110 transition-transform duration-300">
                                 <img
-                                    src={`${BASE_URL}${skill.skillImageURL}`}
+                                    src={skill.skillImageURL?.startsWith('http') ? skill.skillImageURL : `${BASE_URL}${skill.skillImageURL}`}
                                     alt={skill.skillName}
                                     className="w-full h-full object-contain"
                                     loading="lazy"

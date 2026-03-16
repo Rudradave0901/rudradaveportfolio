@@ -20,7 +20,7 @@ const Banner = () => {
                 <div>
                     <div className="flex items-center gap-3">
                         <figure className='img-box w-9 h-9 rounded-lg'>
-                            <img src={`${BASE_URL}${bannerData?.smallImageUrl}`} alt="Banner small Image" width={40} height={40} className='img-cover rounded-lg' />
+                            <img src={bannerData?.smallImageUrl?.startsWith('http') ? bannerData.smallImageUrl : `${BASE_URL}${bannerData?.smallImageUrl}`} alt="Banner small Image" width={40} height={40} className='img-cover rounded-lg' />
                         </figure>
 
                         <div className="flex items-center gap-1.5 text-zinc-400 font-s-14 tracking-wide relative">
@@ -74,7 +74,7 @@ const Banner = () => {
 
                 <div className="hidden lg:block">
                     <figure className='w-full max-w-[480px] ml-auto bg-gradient-to-t from-sky-400 via-25% via-sky-400 to-65% rounded-[60px] overflow-hidden'>
-                        <img src={`${BASE_URL}${bannerData?.bannerImageUrl}`} alt="Banner Main Img" height={800} width={656} className='w-full' fetchPriority="high" />
+                        <img src={bannerData?.bannerImageUrl?.startsWith('http') ? bannerData.bannerImageUrl : `${BASE_URL}${bannerData?.bannerImageUrl}`} alt="Banner Main Img" height={800} width={656} className='w-full' fetchPriority="high" />
                     </figure>
                 </div>
 

@@ -64,7 +64,7 @@ export const updateBanner = asyncHandler(async (req, res) => {
     };
 
     if (req.files?.BannerImage) {
-        BannerService.deleteLocalFile(banner.bannerImageUrl);
+        await BannerService.deleteLocalFile(banner.bannerImageUrl);
         const optimized = await optimizeImage(
             req.files.BannerImage[0],
             path.join(process.cwd(), 'uploads/banners'),
@@ -74,7 +74,7 @@ export const updateBanner = asyncHandler(async (req, res) => {
     }
 
     if (req.files?.smallBannerImage) {
-        BannerService.deleteLocalFile(banner.smallImageUrl);
+        await BannerService.deleteLocalFile(banner.smallImageUrl);
         const optimized = await optimizeImage(
             req.files.smallBannerImage[0],
             path.join(process.cwd(), 'uploads/banners'),

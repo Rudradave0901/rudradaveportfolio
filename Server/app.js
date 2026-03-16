@@ -51,7 +51,6 @@ app.use("/api/", limiter);
 
 app.use(express.json({ limit: '10kb' })); // Body limit
 app.use(cookieParser());
-app.use("/uploads", express.static("uploads"));
 
 // ON NORMAL PATH SAY HELLO AND TRACK VISITOR
 app.get("/", trackVisitor, (req, res) => {

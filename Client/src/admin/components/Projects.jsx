@@ -78,7 +78,7 @@ const Projects = () => {
         tags: (project.stack?.tags || []).join(", "),
       },
     });
-    setImagePreview(`${BASE_URL}${project.projectImageURL}`);
+    setImagePreview(project.projectImageURL?.startsWith('http') ? project.projectImageURL : `${BASE_URL}${project.projectImageURL}`);
     setIsModalOpen(true);
   };
 
@@ -208,7 +208,7 @@ const Projects = () => {
               {/* Project Image */}
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={`${BASE_URL}${project.projectImageURL}`}
+                  src={project.projectImageURL?.startsWith('http') ? project.projectImageURL : `${BASE_URL}${project.projectImageURL}`}
                   alt={project.projectName}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

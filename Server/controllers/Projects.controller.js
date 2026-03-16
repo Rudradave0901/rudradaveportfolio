@@ -61,7 +61,7 @@ export const updateProjectsController = asyncHandler(async (req, res) => {
 
     if (req.files?.projectImageURL) {
         // Delete old image using service utility
-        ProjectService.deleteLocalFile(existingProject.projectImageURL);
+        await ProjectService.deleteLocalFile(existingProject.projectImageURL);
 
         const optimized = await optimizeImage(
             req.files.projectImageURL[0],

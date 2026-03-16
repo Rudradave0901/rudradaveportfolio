@@ -1,7 +1,6 @@
 import { BannerModel } from "../models/Banner.model.js";
 import { ApiError } from "../utils/ApiError.js";
-import fs from "fs";
-import path from "path";
+import { deleteFromCloudinary } from "../utils/cloudinary.js";
 
 class BannerService {
     async getBanner() {
@@ -38,12 +37,9 @@ class BannerService {
         return result;
     }
 
-    deleteLocalFile(filePath) {
+    async deleteLocalFile(filePath) {
         if (!filePath) return;
-        const fullPath = path.join(process.cwd(), filePath.replace(/^\/+/, ""));
-        if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-        }
+        await deleteFromCloudinary(filePath);
     }
 }
 

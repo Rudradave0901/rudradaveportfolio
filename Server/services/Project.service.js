@@ -1,6 +1,5 @@
 import { projectsModel } from "../models/Projects.model.js";
-import fs from "fs";
-import path from "path";
+import { deleteFromCloudinary } from "../utils/cloudinary.js";
 import { ApiError } from "../utils/ApiError.js";
 
 class ProjectService {
@@ -39,26 +38,16 @@ class ProjectService {
 
         // Delete image if exists
         if (project.projectImageURL) {
-            const imagePath = path.join(
-                process.cwd(),
-                project.projectImageURL.replace(/^\/+/, "")
-            );
-
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
+            await deleteFromCloudinary(project.projectImageURL);
         }
 
         await projectsModel.findByIdAndDelete(id);
         return project;
     }
 
-    deleteLocalFile(filePath) {
+    async deleteLocalFile(filePath) {
         if (!filePath) return;
-        const fullPath = path.join(process.cwd(), filePath.replace(/^\/+/, ""));
-        if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-        }
+        await deleteFromCloudinary(filePath);
     }
 }
 

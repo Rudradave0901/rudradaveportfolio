@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import fs from "fs";
 import path from "path";
+import { cloudinary } from "../utils/cloudinary.js";
 
 /* =========================
    CREATE RESUME (ADMIN)
@@ -78,34 +79,28 @@ export const uploadResumePDF = asyncHandler(async (req, res) => {
     throw new ApiError(400, "PDF file is required");
   }
 
-  const resumeDir = path.join("uploads", "resume");
-  const fileName = "resume.pdf";
-  const filePath = path.join(resumeDir, fileName);
-  const tempPath = path.join(resumeDir, `resume_temp_${Date.now()}.pdf`);
-
-  // Ensure directory exists
-  if (!fs.existsSync(resumeDir)) {
-    fs.mkdirSync(resumeDir, { recursive: true });
-  }
-
   try {
-    // Write new file to temporary location first (safe replacement)
-    fs.writeFileSync(tempPath, req.file.buffer);
-
-    // If writing temp file succeeded, move it to the final location
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath); // Delete old file
-    }
-    fs.renameSync(tempPath, filePath);
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'resume',
+          public_id: 'Rudra_Dave_Resume',
+          resource_type: 'raw',
+          type: 'upload',
+          overwrite: true
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
 
     return res
       .status(200)
-      .json(new ApiResponse(200, { url: `/uploads/resume/${fileName}?t=${Date.now()}` }, "Resume PDF generated and stored successfully"));
+      .json(new ApiResponse(200, { url: uploadResult.secure_url }, "Resume PDF generated and stored successfully"));
   } catch (error) {
-    // Cleanup temp file if it exists
-    if (fs.existsSync(tempPath)) {
-      try { fs.unlinkSync(tempPath); } catch (e) { }
-    }
     throw new ApiError(500, "Failed to save PDF file: " + error.message);
   }
 });
@@ -114,14 +109,13 @@ export const uploadResumePDF = asyncHandler(async (req, res) => {
    DOWNLOAD RESUME PDF (PUBLIC)
 ========================= */
 export const downloadResumePDF = asyncHandler(async (req, res) => {
-  const filePath = path.resolve("uploads", "resume", "resume.pdf");
-
-  if (!fs.existsSync(filePath)) {
-    // If not found, we could potentially redirect to /resume?action=download
-    // as a fallback, but per requirements we want to serve the stored file.
-    throw new ApiError(404, "Resume PDF file not found. Please contact the administrator.");
+  // Construct the secure URL based on Cloudinary's raw upload pattern
+  if (!process.env.CLOUDINARY_CLOUD_NAME) {
+    throw new ApiError(404, "Cloudinary is not configured.");
   }
 
-  res.setHeader('Content-Type', 'application/pdf');
-  res.sendFile(filePath);
+  const cloudinaryUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/resume/Rudra_Dave_Resume.pdf`;
+  
+  // Redirect the client to download/view the file from Cloudinary
+  res.redirect(cloudinaryUrl);
 });

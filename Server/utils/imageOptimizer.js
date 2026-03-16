@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import path from 'path';
-import fs from 'fs';
+import { cloudinary } from './cloudinary.js';
 
 export const optimizeImage = async (file, destination, options = {}) => {
     const {
@@ -9,21 +9,27 @@ export const optimizeImage = async (file, destination, options = {}) => {
         format = 'webp'
     } = options;
 
-    const fileName = `${Date.now()}-${path.parse(file.originalname).name}.${format}`;
-    const filePath = path.join(destination, fileName);
-
-    // Ensure directory exists
-    if (!fs.existsSync(destination)) {
-        fs.mkdirSync(destination, { recursive: true });
-    }
-
-    await sharp(file.buffer)
+    const buffer = await sharp(file.buffer)
         .resize({ width, withoutEnlargement: true })
         .toFormat(format, { quality })
-        .toFile(filePath);
+        .toBuffer();
 
-    return {
-        fileName,
-        filePath: `/uploads/${path.basename(destination)}/${fileName}`
-    };
+    const folderName = path.basename(destination) || 'portfolio';
+
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: folderName,
+                resource_type: 'image',
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve({
+                    fileName: result.public_id,
+                    filePath: result.secure_url
+                });
+            }
+        );
+        uploadStream.end(buffer);
+    });
 };
