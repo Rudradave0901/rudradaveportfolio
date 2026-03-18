@@ -84,7 +84,7 @@ export const uploadResumePDF = asyncHandler(async (req, res) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'resume',
-          public_id: 'Rudra_Dave_Resume',
+          public_id: 'Rudra_Dave_Resume.pdf',
           resource_type: 'raw',
           type: 'upload',
           overwrite: true
