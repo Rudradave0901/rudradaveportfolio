@@ -470,7 +470,7 @@
 }
 
 .pdf-export img {
-  top: 9px;
+  top: 8px;
 }
 
 .pdf-export .res-section-head {
@@ -483,4 +483,9 @@
 
 .pdf-export .res-lang-badge::before {
   top: 7px;
+}
+
+.pdf-export .res-summary {
+  position: relative;
+  bottom: 10px;
 }

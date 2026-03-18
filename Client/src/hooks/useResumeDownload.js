@@ -12,7 +12,7 @@ export const useResumeDownload = (resumeRef, resumeData) => {
         try {
             resumeRef.current.classList.add("pdf-export");
             const canvas = await html2canvas(resumeRef.current, {
-                scale: 2,
+                scale: 4,
                 useCORS: true,
                 logging: false,
                 backgroundColor: "#ffffff",
@@ -71,7 +71,7 @@ export const useResumeDownload = (resumeRef, resumeData) => {
         try {
             resumeRef.current.classList.add("pdf-export");
             const canvas = await html2canvas(resumeRef.current, {
-                scale: 2,
+                scale: 4,
                 useCORS: true,
                 logging: false,
                 backgroundColor: "#ffffff",
