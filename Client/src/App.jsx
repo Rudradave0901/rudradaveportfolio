@@ -18,6 +18,7 @@ import Signup from "./pages/auth/Signup";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import GlobalLoader from "./components/ui/GlobalLoader";
 import DaySchedule from "./admin/pages/DaySchedule";
+import GoogleDoc from "./components/GoogleDoc";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/resume" element={<Resume />} />
+        <Route path="/googledoc" element={<GoogleDoc />} />
         <Route path="/schedule" element={<DaySchedule />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/login" element={<Login />} />
