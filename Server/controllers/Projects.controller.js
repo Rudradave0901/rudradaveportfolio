@@ -6,18 +6,41 @@ import { optimizeImage } from "../utils/imageOptimizer.js";
 import path from "path";
 
 export const createdProjectsController = asyncHandler(async (req, res) => {
-    if (!req.files?.projectImageURL) {
+    // console.log("Request Body:", req.body);
+    // console.log("Request Files:", req.files);
+
+    if (!req.files?.projectImageURL || req.files.projectImageURL.length === 0) {
         throw new ApiError(400, "Project image is required");
     }
 
-    const optimized = await optimizeImage(
-        req.files.projectImageURL[0],
-        path.join(process.cwd(), 'uploads/projects'),
-        { width: 1000, quality: 85 }
-    );
+    let optimized;
+    try {
+        optimized = await optimizeImage(
+            req.files.projectImageURL[0],
+            path.join(process.cwd(), 'uploads/projects'),
+            { width: 1000, quality: 85 }
+        );
+    } catch (error) {
+        console.error("Image optimization/upload failed:", error);
+        throw new ApiError(500, `Image upload failed: ${error.message}`);
+    }
 
     const projectImageURL = optimized.filePath;
-    const stack = req.body.stack ? JSON.parse(req.body.stack) : {};
+    
+    let stack = {};
+    if (req.body.stack) {
+        try {
+            stack = typeof req.body.stack === 'string' ? JSON.parse(req.body.stack) : req.body.stack;
+        } catch (error) {
+            console.error("Failed to parse stack JSON:", error);
+            throw new ApiError(400, "Invalid stack format. Must be a valid JSON string.");
+        }
+    }
+
+    // Validate required fields for Mongoose
+    if (!req.body.projectName || !req.body.projectURL || !req.body.category) {
+        throw new ApiError(400, "Project name, URL, and category are required");
+    }
 
     const project = await ProjectService.createProject({
         projectName: req.body.projectName,
@@ -57,21 +80,43 @@ export const updateProjectsController = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const existingProject = await ProjectService.getProjectById(id);
 
-    let projectImageURL = existingProject.projectImageURL;
-
-    if (req.files?.projectImageURL) {
-        // Delete old image using service utility
-        await ProjectService.deleteLocalFile(existingProject.projectImageURL);
-
-        const optimized = await optimizeImage(
-            req.files.projectImageURL[0],
-            path.join(process.cwd(), 'uploads/projects'),
-            { width: 1000, quality: 85 }
-        );
-        projectImageURL = optimized.filePath;
+    if (!existingProject) {
+        throw new ApiError(404, "Project not found");
     }
 
-    const stack = req.body.stack ? JSON.parse(req.body.stack) : existingProject.stack;
+    let projectImageURL = existingProject.projectImageURL;
+
+    if (req.files?.projectImageURL && req.files.projectImageURL.length > 0) {
+        // Delete old image using service utility
+        try {
+            await ProjectService.deleteLocalFile(existingProject.projectImageURL);
+        } catch (error) {
+            console.warn("Failed to delete old image from Cloudinary:", error);
+            // Continue anyway, it's not a fatal error for updating
+        }
+
+        try {
+            const optimized = await optimizeImage(
+                req.files.projectImageURL[0],
+                path.join(process.cwd(), 'uploads/projects'),
+                { width: 1000, quality: 85 }
+            );
+            projectImageURL = optimized.filePath;
+        } catch (error) {
+            console.error("Image optimization/upload failed during update:", error);
+            throw new ApiError(500, `Image upload failed: ${error.message}`);
+        }
+    }
+
+    let stack = existingProject.stack;
+    if (req.body.stack) {
+        try {
+            stack = typeof req.body.stack === 'string' ? JSON.parse(req.body.stack) : req.body.stack;
+        } catch (error) {
+            console.error("Failed to parse stack JSON during update:", error);
+            throw new ApiError(400, "Invalid stack format. Must be a valid JSON string.");
+        }
+    }
 
     const updatedProject = await ProjectService.updateProject(id, {
         projectName: req.body.projectName || existingProject.projectName,
