@@ -27,7 +27,12 @@ const Projects = () => {
   const [formData, setFormData] = useState({
     projectName: "",
     projectURL: "",
-    category: "",
+    githubURL: "",
+    description: "",
+    categories: [],
+    isVisible: true,
+    showOnHomepage: false,
+    homepageOrder: 0,
     projectImage: null,
     stack: {
       frontend: "",
@@ -41,7 +46,12 @@ const Projects = () => {
     setFormData({
       projectName: "",
       projectURL: "",
-      category: "",
+      githubURL: "",
+      description: "",
+      categories: [],
+      isVisible: true,
+      showOnHomepage: false,
+      homepageOrder: 0,
       projectImage: null,
       stack: {
         frontend: "",
@@ -69,7 +79,12 @@ const Projects = () => {
     setFormData({
       projectName: project.projectName || "",
       projectURL: project.projectURL || "",
-      category: project.category || "",
+      githubURL: project.githubURL || "",
+      description: project.description || "",
+      categories: project.categories || (project.category ? [project.category] : []),
+      isVisible: project.isVisible !== false,
+      showOnHomepage: project.showOnHomepage || false,
+      homepageOrder: project.homepageOrder || 0,
       projectImage: null, // Don't reset image unless changed
       stack: {
         frontend: (project.stack?.frontend || []).join(", "),
@@ -119,7 +134,12 @@ const Projects = () => {
     const data = new FormData();
     data.append("projectName", formData.projectName);
     data.append("projectURL", formData.projectURL);
-    data.append("category", formData.category);
+    data.append("githubURL", formData.githubURL);
+    data.append("description", formData.description);
+    data.append("categories", JSON.stringify(formData.categories));
+    data.append("isVisible", formData.isVisible);
+    data.append("showOnHomepage", formData.showOnHomepage);
+    data.append("homepageOrder", formData.homepageOrder);
     if (formData.projectImage) {
       data.append("projectImageURL", formData.projectImage);
     }
@@ -184,6 +204,39 @@ const Projects = () => {
           )}
         </div>
 
+        {isAdmin && (
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8 flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <h4 className="text-lg font-bold text-white mb-2">Frontend Display Settings</h4>
+              <p className="text-sm text-zinc-400 mb-4">Set a maximum limit for the number of projects displayed on the frontend portfolio. Set to 0 for unlimited.</p>
+              <div className="flex items-center gap-4">
+                 <input 
+                   type="number" 
+                   min="0"
+                   id="maxProjectsLimit"
+                   className="w-32 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:border-sky-500"
+                 />
+                 <button onClick={async () => {
+                    const val = document.getElementById('maxProjectsLimit').value;
+                    const btn = document.getElementById('saveSettingsBtn');
+                    btn.innerText = "Saving...";
+                    try {
+                      await fetch(`${BASE_URL}/api/projects/settings`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                        body: JSON.stringify({ maxProjectsLimit: val })
+                      });
+                      btn.innerText = "Saved!";
+                      setTimeout(() => btn.innerText = "Save Limit", 2000);
+                    } catch(err) { btn.innerText = "Error"; }
+                 }} id="saveSettingsBtn" className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg transition-colors">
+                    Save Limit
+                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading && !isModalOpen && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
@@ -220,7 +273,14 @@ const Projects = () => {
                 <h4 className="text-xl font-bold text-white mb-1 group-hover:text-sky-400 transition-colors">
                   {project.projectName}
                 </h4>
-                <p className="text-xs font-medium text-sky-400/80 mb-3">{project.category}</p>
+                <p className="text-xs font-medium text-sky-400/80 mb-3">
+                   {(project.categories || [project.category]).join(", ")}
+                   {project.isVisible === false && <span className="ml-2 text-red-500 border border-red-500/20 bg-red-500/10 px-1.5 py-0.5 rounded text-[10px]">Hidden</span>}
+                   {project.showOnHomepage && <span className="ml-2 text-amber-500 border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 rounded text-[10px]">Homepage (Order: {project.homepageOrder})</span>}
+                </p>
+                {project.description && (
+                  <p className="text-sm text-zinc-400 mb-4 line-clamp-2">{project.description}</p>
+                )}
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {(project.stack?.tags || []).slice(0, 3).map((tag) => (
@@ -323,20 +383,72 @@ const Projects = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Category</label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all appearance-none cursor-pointer"
-                      required
-                    >
-                      <option value="" disabled className="bg-zinc-900">Select Category</option>
-                      <option value="UI designs" className="bg-zinc-900">UI designs</option>
-                      <option value="React Projects" className="bg-zinc-900">React Projects</option>
-                      <option value="Full stack Projects" className="bg-zinc-900">Full stack Projects</option>
-                    </select>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Categories</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['UI designs', 'React Projects', 'Full stack Projects'].map(cat => (
+                        <label key={cat} className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg cursor-pointer hover:border-sky-500/50 transition-colors">
+                          <input 
+                            type="checkbox" 
+                            checked={formData.categories.includes(cat)} 
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData(prev => ({ ...prev, categories: [...prev.categories, cat] }));
+                              } else {
+                                setFormData(prev => ({ ...prev, categories: prev.categories.filter(c => c !== cat) }));
+                              }
+                            }}
+                            className="w-4 h-4 text-sky-500 bg-zinc-800 border-zinc-700 rounded focus:ring-sky-500 focus:ring-1"
+                          />
+                          <span className="text-sm text-zinc-300">{cat}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Visibility</label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <div className="relative">
+                        <input 
+                          type="checkbox" 
+                          className="sr-only" 
+                          checked={formData.isVisible}
+                          onChange={(e) => setFormData(prev => ({ ...prev, isVisible: e.target.checked }))}
+                        />
+                        <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isVisible ? 'bg-sky-500' : 'bg-zinc-700'}`}></div>
+                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.isVisible ? 'transform translate-x-4' : ''}`}></div>
+                      </div>
+                      <span className="text-sm text-zinc-300">{formData.isVisible ? 'Visible on Frontend' : 'Hidden from Frontend'}</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Homepage Feature</label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <div className="relative">
+                        <input 
+                          type="checkbox" 
+                          className="sr-only" 
+                          checked={formData.showOnHomepage}
+                          onChange={(e) => setFormData(prev => ({ ...prev, showOnHomepage: e.target.checked }))}
+                        />
+                        <div className={`block w-10 h-6 rounded-full transition-colors ${formData.showOnHomepage ? 'bg-amber-500' : 'bg-zinc-700'}`}></div>
+                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.showOnHomepage ? 'transform translate-x-4' : ''}`}></div>
+                      </div>
+                      <span className="text-sm text-zinc-300">Show on Homepage</span>
+                    </label>
+                  </div>
+                  {formData.showOnHomepage && (
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Homepage Order</label>
+                    <input
+                      type="number"
+                      name="homepageOrder"
+                      value={formData.homepageOrder}
+                      onChange={handleInputChange}
+                      placeholder="e.g. 1, 2, 3..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                    />
+                  </div>
+                  )}
                   <div>
                     <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Project Link</label>
                     <input
@@ -347,6 +459,28 @@ const Projects = () => {
                       placeholder="https://..."
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">GitHub Link</label>
+                    <input
+                      type="url"
+                      name="githubURL"
+                      value={formData.githubURL}
+                      onChange={handleInputChange}
+                      placeholder="https://github.com/..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1">Brief Description</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Short description of the project..."
+                      rows="3"
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all resize-none"
                     />
                   </div>
                   <div>

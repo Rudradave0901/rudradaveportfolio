@@ -18,7 +18,7 @@ export const createEduExpData = asyncHandler(async (req, res) => {
 });
 
 export const getEduExpData = asyncHandler(async (req, res) => {
-    const getData = await EduExpModel.find();
+    const getData = await EduExpModel.find().lean();
     return res
         .status(200)
         .json(new ApiResponse(200, getData, "Data fetched successfully"));

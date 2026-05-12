@@ -20,8 +20,9 @@ const Sidebar = ({ categories, selectedCategory, onSelectCategory, isOpen, setIs
                 <div className="flex flex-col h-full p-6">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-10">
-                        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                            Portfolio
+                        <h2 className="text-2xl text-white font-bold tracking-tight flex items-center gap-3 mb-10">
+                            <div class="w-8 h-8 rounded-full bg-[#00AEEF] flex items-center justify-center"><i class="fas fa-atom text-white text-lg"></i></div>
+                            Rudra.Dave
                         </h2>
                         <button
                             onClick={() => setIsOpen(false)}
@@ -66,7 +67,7 @@ const Sidebar = ({ categories, selectedCategory, onSelectCategory, isOpen, setIs
                     <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-3 px-2 text-slate-500">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-xs font-medium">Available for hire</span>
+                            <span className="text-xs font-medium">Portfolio Projects</span>
                         </div>
                     </div>
                 </div>

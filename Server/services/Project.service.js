@@ -8,7 +8,7 @@ class ProjectService {
     }
 
     async getProjects() {
-        return await projectsModel.find();
+        return await projectsModel.find().lean();
     }
 
     async getProjectById(id) {

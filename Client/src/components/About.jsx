@@ -15,9 +15,11 @@ const About = () => {
                     <h4 className="section-title mb-7">Something <span>About Me : </span></h4>
 
                     <div className="bg-zinc-800/50 p-7 rounded-2xl md:p-12 reveal-up">
-                        <p className='text-zinc-300 mb-4 md:mb-8 font-s-20 md:max-w-[60ch]'>
-                            {aboutData?.aboutContent}
-                        </p>
+                        <div className='text-zinc-300 mb-4 md:mb-8 font-s-20 md:max-w-[60ch] flex flex-col gap-4'>
+                            {aboutData?.aboutContent?.split('\n').map((paragraph, index) => (
+                                paragraph.trim() !== '' ? <p key={index}>{paragraph}</p> : null
+                            ))}
+                        </div>
                         <div className="flex flex-wrap items-center gap-4 md:gap-7">
 
                             <div className="">
@@ -36,7 +38,7 @@ const About = () => {
                                 <p className="font-s-14 text-zinc-400">Years of experience</p>
                             </div>
 
-                            <img src="/images/logo.svg" alt="Logo" width={30} height={30} className='ml-auto md:w-[40px] md:h-[40px]' />
+                            <img src="/images/logo.svg" alt="Logo" width={30} height={30} loading="lazy" className='ml-auto md:w-[40px] md:h-[40px]' />
                         </div>
                     </div>
                 </div>

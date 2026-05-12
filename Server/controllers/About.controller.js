@@ -18,7 +18,7 @@ export const createAboutData = asyncHandler(async (req, res) => {
 
 // GET ABOUT DATA
 export const getAboutData = asyncHandler(async (req, res) => {
-    const aboutData = await AboutModel.findOne();
+    const aboutData = await AboutModel.findOne().lean();
 
     if (!aboutData) {
         throw new ApiError(404, "Data not found");

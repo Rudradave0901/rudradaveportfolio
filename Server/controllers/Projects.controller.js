@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import ProjectService from "../services/Project.service.js";
+import { projectSettingsModel } from "../models/ProjectSettings.model.js";
 import { optimizeImage } from "../utils/imageOptimizer.js";
 import path from "path";
 
@@ -38,16 +39,30 @@ export const createdProjectsController = asyncHandler(async (req, res) => {
     }
 
     // Validate required fields for Mongoose
-    if (!req.body.projectName || !req.body.projectURL || !req.body.category) {
-        throw new ApiError(400, "Project name, URL, and category are required");
+    if (!req.body.projectName || !req.body.projectURL || !req.body.categories) {
+        throw new ApiError(400, "Project name, URL, and categories are required");
+    }
+
+    let categories = [];
+    if (req.body.categories) {
+        try {
+            categories = typeof req.body.categories === 'string' ? JSON.parse(req.body.categories) : req.body.categories;
+        } catch (error) {
+            categories = [req.body.categories];
+        }
     }
 
     const project = await ProjectService.createProject({
         projectName: req.body.projectName,
         projectURL: req.body.projectURL,
+        githubURL: req.body.githubURL,
+        description: req.body.description,
         projectImageURL,
         stack,
-        category: req.body.category,
+        categories,
+        isVisible: req.body.isVisible !== undefined ? req.body.isVisible === 'true' || req.body.isVisible === true : true,
+        showOnHomepage: req.body.showOnHomepage === 'true' || req.body.showOnHomepage === true,
+        homepageOrder: Number(req.body.homepageOrder) || 0,
     });
 
     return res
@@ -118,10 +133,39 @@ export const updateProjectsController = asyncHandler(async (req, res) => {
         }
     }
 
+    let categories = existingProject.categories;
+    if (req.body.categories) {
+        try {
+            categories = typeof req.body.categories === 'string' ? JSON.parse(req.body.categories) : req.body.categories;
+        } catch (error) {
+            categories = [req.body.categories];
+        }
+    }
+
+    let isVisible = existingProject.isVisible;
+    if (req.body.isVisible !== undefined) {
+        isVisible = req.body.isVisible === 'true' || req.body.isVisible === true;
+    }
+
+    let showOnHomepage = existingProject.showOnHomepage;
+    if (req.body.showOnHomepage !== undefined) {
+        showOnHomepage = req.body.showOnHomepage === 'true' || req.body.showOnHomepage === true;
+    }
+
+    let homepageOrder = existingProject.homepageOrder;
+    if (req.body.homepageOrder !== undefined) {
+        homepageOrder = Number(req.body.homepageOrder) || 0;
+    }
+
     const updatedProject = await ProjectService.updateProject(id, {
         projectName: req.body.projectName || existingProject.projectName,
         projectURL: req.body.projectURL || existingProject.projectURL,
-        category: req.body.category || existingProject.category,
+        githubURL: req.body.githubURL !== undefined ? req.body.githubURL : existingProject.githubURL,
+        description: req.body.description !== undefined ? req.body.description : existingProject.description,
+        categories,
+        isVisible,
+        showOnHomepage,
+        homepageOrder,
         projectImageURL,
         stack,
     });
@@ -129,4 +173,26 @@ export const updateProjectsController = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, updatedProject, "Project updated successfully"));
+});
+
+export const getProjectSettings = asyncHandler(async (req, res) => {
+    let settings = await projectSettingsModel.findOne();
+    if (!settings) {
+        settings = await projectSettingsModel.create({ maxProjectsLimit: 0 });
+    }
+    return res.status(200).json(new ApiResponse(200, settings, "Settings fetched successfully"));
+});
+
+export const updateProjectSettings = asyncHandler(async (req, res) => {
+    let settings = await projectSettingsModel.findOne();
+    const { maxProjectsLimit } = req.body;
+    
+    if (!settings) {
+        settings = await projectSettingsModel.create({ maxProjectsLimit: Number(maxProjectsLimit) || 0 });
+    } else {
+        settings.maxProjectsLimit = Number(maxProjectsLimit) || 0;
+        await settings.save();
+    }
+    
+    return res.status(200).json(new ApiResponse(200, settings, "Settings updated successfully"));
 });

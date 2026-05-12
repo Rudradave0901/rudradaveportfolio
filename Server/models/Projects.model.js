@@ -14,6 +14,12 @@ const projectSchema = mongoose.Schema(
             type: String,
             required: true,
         },
+        githubURL: {
+            type: String,
+        },
+        description: {
+            type: String,
+        },
         stack: {
             frontend: {
                 type: [String],
@@ -32,9 +38,21 @@ const projectSchema = mongoose.Schema(
                 required: true,
             }
         },
-        category: {
-            type: String,
+        categories: {
+            type: [String],
             required: true
+        },
+        isVisible: {
+            type: Boolean,
+            default: true
+        },
+        showOnHomepage: {
+            type: Boolean,
+            default: false
+        },
+        homepageOrder: {
+            type: Number,
+            default: 0
         }
     },
     {

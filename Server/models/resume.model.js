@@ -77,33 +77,12 @@ const ProjectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
-    description: {
-      type: String,
+    points: {
+      type: [String],
       required: true,
+      default: [],
     },
-
-    liveUrl: {
-      type: String,
-      trim: true,
-    },
-
-    githubUrl: {
-      type: String,
-      trim: true,
-    },
-
-    imageUrl: {
-      type: String,
-    },
-
-    techStack: {
-      frontend: { type: [String], default: [] },
-      backend: { type: [String], default: [] },
-      tools: { type: [String], default: [] },
-    },
-
-    isFeatured: {
+    inProgress: {
       type: Boolean,
       default: false,
     },
@@ -111,6 +90,15 @@ const ProjectSchema = new mongoose.Schema(
   { _id: false }
 );
 
+
+const EducationSchema = new mongoose.Schema(
+  {
+    degree: { type: String, required: true },
+    school: { type: String, required: true },
+    year: { type: String, required: true },
+  },
+  { _id: false }
+);
 
 /* =====================
    Main Resume Schema
@@ -144,12 +132,18 @@ const ResumeSchema = new mongoose.Schema(
     },
 
     about: {
-      type: String,
+      type: [String],
       required: true,
+      default: [""],
     },
 
     experience: {
       type: [ExperienceSchema],
+      default: [],
+    },
+
+    education: {
+      type: [EducationSchema],
       default: [],
     },
 
@@ -161,6 +155,29 @@ const ResumeSchema = new mongoose.Schema(
     achievements: {
       type: [String],
       default: [],
+    },
+
+    // Which page each section belongs to (1 or 2)
+    pageLayout: {
+      type: Map,
+      of: Number,
+      default: {
+        summary: 1,
+        education: 1,
+        experience: 1,
+        skills: 2,
+        projects: 2,
+        achievements: 2,
+      },
+    },
+
+    // Section render order per page – array of section keys
+    sectionOrder: {
+      type: [String],
+      default: [
+        'summary', 'education', 'experience',
+        'skills', 'projects', 'achievements',
+      ],
     },
 
     templateId: {

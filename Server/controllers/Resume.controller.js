@@ -27,10 +27,15 @@ export const createResume = asyncHandler(async (req, res) => {
    GET RESUME (PUBLIC)
 ========================= */
 export const getResume = asyncHandler(async (req, res) => {
-  const resume = await ResumeModel.findOne({ isActive: true });
+  const resume = await ResumeModel.findOne({ isActive: true }).lean();
 
   if (!resume) {
     throw new ApiError(404, "Resume not found");
+  }
+
+  // Mongoose Map -> plain object for frontend consumption
+  if (resume.pageLayout instanceof Map) {
+    resume.pageLayout = Object.fromEntries(resume.pageLayout);
   }
 
   return res

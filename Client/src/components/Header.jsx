@@ -89,12 +89,13 @@ const Navbar = ({ navOpen }) => {
   useEffect(() => {
     updateActiveBox();
     window.addEventListener("resize", updateActiveBox);
+    window.addEventListener("load", updateActiveBox);
     return () => window.removeEventListener("resize", updateActiveBox);
   }, [activeSection]);
 
   useEffect(() => {
     const handleScroll = () => {
-      let current = activeSection;
+      let current = "home";
 
       const sections = document.querySelectorAll("section[id]");
       sections.forEach((section) => {
@@ -102,6 +103,11 @@ const Navbar = ({ navOpen }) => {
           current = section.id;
         }
       });
+
+      // Force home if we are near the top of the page
+      if (window.scrollY < 100) {
+        current = "home";
+      }
 
       setActiveSection((prev) => (prev !== current ? current : prev));
     };

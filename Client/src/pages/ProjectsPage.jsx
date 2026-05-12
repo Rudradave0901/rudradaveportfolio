@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
 import Sidebar from '../components/portfolio/Sidebar';
 import ProjectList from '../components/portfolio/ProjectList';
 import useProjects from '../hooks/useProjects';
-
-gsap.registerPlugin(useGSAP);
 
 const CATEGORIES = ['All', 'UI designs', 'React Projects', 'Full stack Projects'];
 
@@ -17,27 +13,34 @@ const ProjectsPage = () => {
 
     const containerRef = useRef(null);
 
+    const [maxLimit, setMaxLimit] = useState(0);
+
+    useEffect(() => {
+        fetch(`${import.meta.env.VITE_SERVER_URL || 'http://localhost:4000'}/api/projects/settings`)
+           .then(res => res.json())
+           .then(data => {
+               if (data.data) setMaxLimit(data.data.maxProjectsLimit || 0);
+           }).catch(console.error);
+    }, []);
+
     useEffect(() => {
         if (!hookLoading && projects) {
-            if (selectedCategory === 'All') {
-                setFilteredProjects(projects);
-            } else {
-                setFilteredProjects(projects.filter(p => p.category === selectedCategory));
+            let visibleProjects = projects.filter(p => p.isVisible !== false);
+            
+            if (selectedCategory !== 'All') {
+                visibleProjects = visibleProjects.filter(p => 
+                    (p.categories && p.categories.includes(selectedCategory)) || 
+                    p.category === selectedCategory
+                );
             }
-        }
-    }, [selectedCategory, projects, hookLoading]);
 
-    useGSAP(() => {
-        if (!hookLoading) {
-            gsap.from(".project-card", {
-                y: 30,
-                opacity: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: "power2.out"
-            });
+            if (maxLimit > 0) {
+                visibleProjects = visibleProjects.slice(0, maxLimit);
+            }
+
+            setFilteredProjects(visibleProjects);
         }
-    }, { dependencies: [hookLoading, selectedCategory], scope: containerRef });
+    }, [selectedCategory, projects, hookLoading, maxLimit]);
 
     return (
         <div className="bg-zinc-950 flex flex-col min-h-screen">

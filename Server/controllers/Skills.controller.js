@@ -33,7 +33,7 @@ export const createskillData = asyncHandler(async (req, res) => {
 
 // GET SKILLS DATA
 export const getSkillData = asyncHandler(async (req, res) => {
-    const getData = await SkillsModel.find();
+    const getData = await SkillsModel.find().lean();
 
     if (!getData || getData.length === 0) {
         throw new ApiError(404, "No data found");

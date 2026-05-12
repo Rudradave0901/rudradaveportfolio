@@ -20,7 +20,7 @@ const Banner = () => {
                 <div>
                     <div className="flex items-center gap-3">
                         <figure className='img-box w-9 h-9 rounded-lg'>
-                            <img src={bannerData?.smallImageUrl?.startsWith('http') ? bannerData.smallImageUrl : `${BASE_URL}${bannerData?.smallImageUrl}`} alt="Banner small Image" width={40} height={40} className='img-cover rounded-lg' />
+                            <img src={bannerData?.smallImageUrl?.startsWith('http') ? bannerData.smallImageUrl : `${BASE_URL}${bannerData?.smallImageUrl}`} alt="Banner small Image" width={40} height={40} fetchPriority="high" className='img-cover rounded-lg' />
                         </figure>
 
                         <div className="flex items-center gap-1.5 text-zinc-400 font-s-14 tracking-wide relative">
@@ -55,12 +55,19 @@ const Banner = () => {
 
                     <div className="flex items-center gap-3">
                         <ButtonPrimary
-                            herf={`${BASE_URL}/api/resume/Rudra_Dave_Resume.pdf`}
+                            herf={`/resume/rudra_dave_12-may.pdf`}
                             target={'_blank'}
                             label="Download CV"
                             iconImg="/images/downloadIcon.svg"
                             classes='flex align-center'
                         />
+                        {/* <ButtonPrimary
+                            herf={`${BASE_URL}/api/resume/Rudra_Dave_Resume.pdf`}
+                            target={'_blank'}
+                            label="Download CV"
+                            iconImg="/images/downloadIcon.svg"
+                            classes='flex align-center'
+                        /> */}
 
                         <ButtonOutline
                             herf={"#about"}

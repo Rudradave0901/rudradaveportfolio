@@ -8,11 +8,17 @@ const ProjectCard = ({ project }) => {
                 <img
                     src={project.projectImageURL ? (project.projectImageURL.startsWith('http') ? project.projectImageURL : `${BASE_URL}${project.projectImageURL}`) : 'https://via.placeholder.com/400x225'}
                     alt={project.projectName}
+                    loading="lazy"
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <span className="text-white text-xs font-medium bg-sky-500/80 px-2 py-1 rounded-md">{project.category}</span>
+                    <span className="text-white text-xs font-medium bg-sky-500/80 px-2 py-1 rounded-md">{(project.categories && project.categories.length > 0) ? project.categories[0] : project.category}</span>
                 </div>
+                {project.isWorkInProgress && (
+                    <div className="absolute top-3 left-3 bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 border border-purple-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> In Development
+                    </div>
+                )}
             </div>
 
             {/* Content */}

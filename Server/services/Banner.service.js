@@ -4,7 +4,7 @@ import { deleteFromCloudinary } from "../utils/cloudinary.js";
 
 class BannerService {
     async getBanner() {
-        const banner = await BannerModel.findOne();
+        const banner = await BannerModel.findOne().lean();
         if (!banner) {
             throw new ApiError(404, "Banner not found");
         }

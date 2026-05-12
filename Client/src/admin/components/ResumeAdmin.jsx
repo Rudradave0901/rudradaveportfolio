@@ -62,8 +62,60 @@ const ResumeAdmin = () => {
     { id: 'header', label: 'Identity & About', icon: 'fa-user-circle' },
     { id: 'contact', label: 'Connections', icon: 'fa-address-book' },
     { id: 'skills', label: 'Professional Skills', icon: 'fa-layer-group' },
-    { id: 'highlights', label: 'Highlights & Achievements', icon: 'fa-award' }
+    { id: 'highlights', label: 'Highlights & Achievements', icon: 'fa-award' },
+    { id: 'projects', label: 'Projects', icon: 'fa-project-diagram' },
+    { id: 'pageLayout', label: 'Page Layout', icon: 'fa-columns' }
   ], []);
+
+  /* ── Page Layout helpers ── */
+  const SECTION_LABELS = {
+    summary: 'Professional Summary',
+    education: 'Education',
+    experience: 'Work Experience',
+    skills: 'Skills & Expertise',
+    projects: 'Projects',
+    achievements: 'Achievements',
+  };
+  const SECTION_ICONS = {
+    summary: 'fa-user',
+    education: 'fa-graduation-cap',
+    experience: 'fa-briefcase',
+    skills: 'fa-layer-group',
+    projects: 'fa-project-diagram',
+    achievements: 'fa-trophy',
+  };
+  const DEFAULT_PAGE_LAYOUT = { summary: 1, education: 1, experience: 1, skills: 2, projects: 2, achievements: 2 };
+  const DEFAULT_SECTION_ORDER = ['summary', 'education', 'experience', 'skills', 'projects', 'achievements'];
+
+  const currentPageLayout = useMemo(() => {
+    const raw = resumeData?.pageLayout;
+    if (!raw) return DEFAULT_PAGE_LAYOUT;
+    if (raw instanceof Map) return Object.fromEntries(raw);
+    return { ...DEFAULT_PAGE_LAYOUT, ...raw };
+  }, [resumeData?.pageLayout]);
+
+  const currentSectionOrder = useMemo(() => {
+    return resumeData?.sectionOrder?.length ? resumeData.sectionOrder : DEFAULT_SECTION_ORDER;
+  }, [resumeData?.sectionOrder]);
+
+  const setPageForSection = useCallback((sectionKey, page) => {
+    if (!isAdmin) return;
+    setResumeData(prev => ({
+      ...prev,
+      pageLayout: { ...currentPageLayout, [sectionKey]: page },
+    }));
+  }, [isAdmin, currentPageLayout, setResumeData]);
+
+  const moveSectionInOrder = useCallback((sectionKey, direction) => {
+    if (!isAdmin) return;
+    const order = [...currentSectionOrder];
+    const idx = order.indexOf(sectionKey);
+    if (idx < 0) return;
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= order.length) return;
+    [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+    setResumeData(prev => ({ ...prev, sectionOrder: order }));
+  }, [isAdmin, currentSectionOrder, setResumeData]);
 
   if (loading && !resumeData) return <div className="p-10 text-center text-zinc-500">Loading Resume Data...</div>;
 
@@ -156,23 +208,61 @@ const ResumeAdmin = () => {
                     readOnly={!isAdmin}
                   />
                 </div>
-                <FormTextArea
-                  label="Professional Summary"
-                  value={resumeData?.about}
-                  onChange={(v) => isAdmin && setResumeData({ ...resumeData, about: v })}
-                  rows={10}
-                  readOnly={!isAdmin}
-                />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Professional Summary</label>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          const currentAbout = Array.isArray(resumeData?.about) ? resumeData.about : [resumeData?.about || ""];
+                          setResumeData({ ...resumeData, about: [...currentAbout, ""] });
+                        }}
+                        className="text-xs font-bold text-cyan-500 uppercase tracking-widest hover:text-cyan-400 transition-colors"
+                      >
+                        + Add Paragraph
+                      </button>
+                    )}
+                  </div>
+                  {(Array.isArray(resumeData?.about) ? resumeData.about : [resumeData?.about || ""]).map((para, i) => (
+                    <div key={i} className="flex gap-3 items-start group/para">
+                      <textarea
+                        value={para}
+                        onChange={(e) => {
+                          if (!isAdmin) return;
+                          const updated = Array.isArray(resumeData?.about) ? [...resumeData.about] : [resumeData?.about || ""];
+                          updated[i] = e.target.value;
+                          setResumeData({ ...resumeData, about: updated });
+                        }}
+                        rows={4}
+                        readOnly={!isAdmin}
+                        className={`w-full px-5 py-4 rounded-3xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none ${isAdmin ? 'focus:border-cyan-500' : ''} transition-all font-s-16 resize-none leading-relaxed`}
+                        placeholder={!isAdmin ? "No content." : `Paragraph ${i + 1}...`}
+                      />
+                      {isAdmin && (Array.isArray(resumeData?.about) ? resumeData.about : [resumeData?.about || ""]).length > 1 && (
+                        <button
+                          onClick={() => {
+                            const updated = Array.isArray(resumeData?.about) ? [...resumeData.about] : [resumeData?.about || ""];
+                            updated.splice(i, 1);
+                            setResumeData({ ...resumeData, about: updated });
+                          }}
+                          className="text-zinc-600 hover:text-red-500 p-2 mt-2 opacity-0 group-hover/para:opacity-100 transition-all"
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {activeTab === 'contact' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormInput label="Email Address" value={resumeData?.contact?.email} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, email: v } })} readOnly={!isAdmin} />
-                  <FormInput label="Phone Number" value={resumeData?.contact?.phone} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, phone: v } })} readOnly={!isAdmin} />
+                  <FormInput label="Email Address" type="email" inputMode="email" value={resumeData?.contact?.email} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, email: v } })} readOnly={!isAdmin} />
+                  <FormInput label="Phone Number" type="tel" inputMode="tel" value={resumeData?.contact?.phone} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, phone: v } })} readOnly={!isAdmin} />
                   <FormInput label="Location" value={resumeData?.contact?.location} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, location: v } })} readOnly={!isAdmin} />
-                  <FormInput label="Portfolio Link" value={resumeData?.contact?.portfolio} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, portfolio: v } })} readOnly={!isAdmin} />
+                  <FormInput label="Portfolio Link" type="url" inputMode="url" value={resumeData?.contact?.portfolio} onChange={(v) => isAdmin && setResumeData({ ...resumeData, contact: { ...resumeData.contact, portfolio: v } })} readOnly={!isAdmin} />
                 </div>
               </div>
             )}
@@ -393,6 +483,73 @@ const ResumeAdmin = () => {
                   </div>
                 </div>
 
+                {/* Education Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                      <i className="fas fa-graduation-cap text-cyan-500"></i>
+                      Education
+                    </h3>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setResumeData({
+                            ...resumeData,
+                            education: [...(resumeData.education || []), {
+                              degree: '', school: '', year: ''
+                            }]
+                          });
+                        }}
+                        className="text-xs font-bold text-cyan-500 uppercase tracking-widest hover:text-cyan-400 transition-colors"
+                      >
+                        + Add Education
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-6">
+                    {resumeData?.education?.map((edu, ei) => (
+                      <div key={ei} className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800 group/edu">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <FormInput label="Degree / Course" value={edu.degree} onChange={(v) => {
+                            if (!isAdmin) return;
+                            const updated = [...(resumeData.education || [])];
+                            updated[ei].degree = v;
+                            setResumeData({ ...resumeData, education: updated });
+                          }} readOnly={!isAdmin} />
+                          <FormInput label="School / University" value={edu.school} onChange={(v) => {
+                            if (!isAdmin) return;
+                            const updated = [...(resumeData.education || [])];
+                            updated[ei].school = v;
+                            setResumeData({ ...resumeData, education: updated });
+                          }} readOnly={!isAdmin} />
+                          <FormInput label="Year / Duration" value={edu.year} onChange={(v) => {
+                            if (!isAdmin) return;
+                            const updated = [...(resumeData.education || [])];
+                            updated[ei].year = v;
+                            setResumeData({ ...resumeData, education: updated });
+                          }} readOnly={!isAdmin} />
+                        </div>
+                        <div className="flex justify-end items-center">
+                          {isAdmin ? (
+                            <button
+                              onClick={() => {
+                                const updated = resumeData.education.filter((_, idx) => idx !== ei);
+                                setResumeData({ ...resumeData, education: updated });
+                              }}
+                              className="text-xs font-bold text-red-900/50 hover:text-red-500 transition-colors uppercase tracking-widest"
+                            >
+                              Delete Education
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest italic">Read Only Section</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Achievements & Languages */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <ListManager
@@ -412,6 +569,219 @@ const ResumeAdmin = () => {
                 </div>
               </div>
             )}
+
+            {activeTab === 'projects' && (
+              <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                      <i className="fas fa-project-diagram text-cyan-500"></i>
+                      Projects
+                    </h3>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setResumeData({
+                            ...resumeData,
+                            projects: [...(resumeData.projects || []), {
+                              title: '', points: [''], inProgress: false
+                            }]
+                          });
+                        }}
+                        className="text-xs font-bold text-cyan-500 uppercase tracking-widest hover:text-cyan-400 transition-colors"
+                      >
+                        + Add New Project
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-6">
+                    {resumeData?.projects?.map((proj, pi) => (
+                      <div key={pi} className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800 group/proj">
+                        <div className="flex justify-between items-start gap-4 mb-4">
+                          <div className="flex-1">
+                            <FormInput label="Project Name" value={proj.title} onChange={(v) => {
+                              if (!isAdmin) return;
+                              const updated = [...resumeData.projects];
+                              updated[pi].title = v;
+                              setResumeData({ ...resumeData, projects: updated });
+                            }} readOnly={!isAdmin} />
+                          </div>
+                          <div className="flex items-center mt-8 gap-2">
+                            <input 
+                              type="checkbox" 
+                              id={`inProgress-${pi}`}
+                              checked={proj.inProgress}
+                              onChange={(e) => {
+                                if (!isAdmin) return;
+                                const updated = [...resumeData.projects];
+                                updated[pi].inProgress = e.target.checked;
+                                setResumeData({ ...resumeData, projects: updated });
+                              }}
+                              disabled={!isAdmin}
+                              className="w-4 h-4 rounded border-zinc-800 bg-zinc-900 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-zinc-950"
+                            />
+                            <label htmlFor={`inProgress-${pi}`} className="text-xs font-bold text-zinc-400 uppercase tracking-widest cursor-pointer">
+                              In Progress
+                            </label>
+                          </div>
+                        </div>
+
+                        <label className="block text-xs font-bold text-zinc-600 uppercase tracking-wider mb-2 ml-1">Description Points</label>
+                        <div className="space-y-2 mb-4">
+                          {(proj.points || []).map((pt, pti) => (
+                            <div key={pti} className="flex gap-2">
+                              <input
+                                value={pt}
+                                onChange={(e) => {
+                                  if (!isAdmin) return;
+                                  const updated = [...resumeData.projects];
+                                  if (!updated[pi].points) updated[pi].points = [];
+                                  updated[pi].points[pti] = e.target.value;
+                                  setResumeData({ ...resumeData, projects: updated });
+                                }}
+                                readOnly={!isAdmin}
+                                className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-300 ${isAdmin ? 'focus:border-cyan-500' : ''} focus:outline-none`}
+                                placeholder="Describe a feature, task, or outcome..."
+                              />
+                              {isAdmin && (
+                                <button
+                                  onClick={() => {
+                                    const updated = [...resumeData.projects];
+                                    if (updated[pi].points) updated[pi].points.splice(pti, 1);
+                                    setResumeData({ ...resumeData, projects: updated });
+                                  }}
+                                  className="text-zinc-600 hover:text-red-500 p-2"
+                                >
+                                  <i className="fas fa-times"></i>
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          {isAdmin ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  const updated = [...resumeData.projects];
+                                  if (!updated[pi].points) updated[pi].points = [];
+                                  updated[pi].points.push("");
+                                  setResumeData({ ...resumeData, projects: updated });
+                                }}
+                                className="text-xs font-bold text-zinc-500 hover:text-cyan-500 transition-colors uppercase tracking-widest"
+                              >
+                                + Add Description Point
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const updated = resumeData.projects.filter((_, idx) => idx !== pi);
+                                  setResumeData({ ...resumeData, projects: updated });
+                                }}
+                                className="text-xs font-bold text-red-900/50 hover:text-red-500 transition-colors uppercase tracking-widest"
+                              >
+                                Delete Project
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-[10px] text-zinc-700 font-bold uppercase tracking-widest italic">Read Only Section</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {resumeData?.projects?.length === 0 && (
+                      <p className="text-zinc-500 text-sm text-center py-10 bg-zinc-950/50 rounded-2xl border border-dashed border-zinc-800">
+                        No projects added yet. Click "+ Add New Project" to get started.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'pageLayout' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800">
+                  <div className="flex items-center gap-3 mb-6">
+                    <i className="fas fa-info-circle text-cyan-500"></i>
+                    <p className="text-sm text-zinc-400">
+                      Assign each section to <strong className="text-white">Page 1</strong> or <strong className="text-white">Page 2</strong>. Use arrows to reorder sections within their page.
+                    </p>
+                  </div>
+
+                  {/* Page 1 */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-3 mb-4">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-cyan-600 text-white text-xs font-black">1</span>
+                      Page 1 Sections
+                    </h3>
+                    <div className="space-y-3">
+                      {currentSectionOrder.filter(s => (currentPageLayout[s] || 1) === 1).map((key) => (
+                        <div key={key} className="flex items-center gap-4 p-4 rounded-xl bg-zinc-900 border border-zinc-800 group/sec">
+                          <i className={`fas ${SECTION_ICONS[key]} text-cyan-500 w-5`}></i>
+                          <span className="flex-1 font-semibold text-white">{SECTION_LABELS[key]}</span>
+                          {isAdmin && (
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => moveSectionInOrder(key, -1)} className="text-zinc-600 hover:text-white p-1 transition-colors" title="Move Up">
+                                <i className="fas fa-chevron-up text-xs"></i>
+                              </button>
+                              <button onClick={() => moveSectionInOrder(key, 1)} className="text-zinc-600 hover:text-white p-1 transition-colors" title="Move Down">
+                                <i className="fas fa-chevron-down text-xs"></i>
+                              </button>
+                              <button
+                                onClick={() => setPageForSection(key, 2)}
+                                className="ml-2 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 hover:bg-amber-600/20 hover:text-amber-400 border border-zinc-700 hover:border-amber-500/30 transition-all"
+                              >
+                                Move to Page 2 →
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {currentSectionOrder.filter(s => (currentPageLayout[s] || 1) === 1).length === 0 && (
+                        <p className="text-center py-6 text-zinc-600 text-sm italic">No sections on Page 1</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Page 2 */}
+                  <div>
+                    <h3 className="text-lg font-bold text-white flex items-center gap-3 mb-4">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-600 text-white text-xs font-black">2</span>
+                      Page 2 Sections
+                    </h3>
+                    <div className="space-y-3">
+                      {currentSectionOrder.filter(s => (currentPageLayout[s] || 1) === 2).map((key) => (
+                        <div key={key} className="flex items-center gap-4 p-4 rounded-xl bg-zinc-900 border border-zinc-800 group/sec">
+                          <i className={`fas ${SECTION_ICONS[key]} text-amber-500 w-5`}></i>
+                          <span className="flex-1 font-semibold text-white">{SECTION_LABELS[key]}</span>
+                          {isAdmin && (
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => moveSectionInOrder(key, -1)} className="text-zinc-600 hover:text-white p-1 transition-colors" title="Move Up">
+                                <i className="fas fa-chevron-up text-xs"></i>
+                              </button>
+                              <button onClick={() => moveSectionInOrder(key, 1)} className="text-zinc-600 hover:text-white p-1 transition-colors" title="Move Down">
+                                <i className="fas fa-chevron-down text-xs"></i>
+                              </button>
+                              <button
+                                onClick={() => setPageForSection(key, 1)}
+                                className="ml-2 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 hover:bg-cyan-600/20 hover:text-cyan-400 border border-zinc-700 hover:border-cyan-500/30 transition-all"
+                              >
+                                ← Move to Page 1
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {currentSectionOrder.filter(s => (currentPageLayout[s] || 1) === 2).length === 0 && (
+                        <p className="text-center py-6 text-zinc-600 text-sm italic">No sections on Page 2 — all content fits on a single page.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -428,11 +798,12 @@ const ResumeAdmin = () => {
 
 // --- Memoized UI Sub-components ---
 
-const FormInput = memo(({ label, value, onChange, readOnly }) => (
+const FormInput = memo(({ label, value, onChange, readOnly, type = "text", inputMode }) => (
   <div>
     <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">{label}</label>
     <input
-      type="text"
+      type={type}
+      inputMode={inputMode}
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       readOnly={readOnly}

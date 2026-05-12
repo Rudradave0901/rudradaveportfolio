@@ -110,6 +110,22 @@ const ExpEducation = () => {
         await editEduExp(docId, updatedDoc);
     };
 
+    const moveItem = async (type, index, direction, docId) => {
+        if (!isAdmin) return;
+        const doc = eduExpData.find(d => d._id === docId);
+        if (!doc) return;
+
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= doc[type].length) return;
+
+        const updatedDoc = { ...doc };
+        const items = [...updatedDoc[type]];
+        [items[index], items[newIndex]] = [items[newIndex], items[index]];
+        updatedDoc[type] = items;
+
+        await editEduExp(docId, updatedDoc);
+    };
+
     const handleDescriptionChange = (index, value) => {
         const newDesc = [...formData.description];
         newDesc[index] = value;
@@ -160,8 +176,11 @@ const ExpEducation = () => {
                                 <div key={`${doc._id}-edu-${idx}`} className="card p-6 border-l-4 border-l-cyan-500 relative group bg-zinc-900/50 hover:bg-zinc-900 transition-all rounded-xl border border-zinc-800">
                                     {isAdmin && (
                                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openEditModal('education', idx, edu, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
-                                            <button onClick={() => handleDelete('education', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
+                                            <button onClick={() => moveItem('education', idx, -1, doc._id)} disabled={idx === 0} className={`w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-700 transition-all ${idx === 0 ? 'bg-zinc-900/50 text-zinc-700 cursor-not-allowed' : 'bg-zinc-800 hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500'}`} title="Move Up"><i className="fas fa-arrow-up text-xs"></i></button>
+                                            <button onClick={() => moveItem('education', idx, 1, doc._id)} disabled={idx === doc.education.length - 1} className={`w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-700 transition-all ${idx === doc.education.length - 1 ? 'bg-zinc-900/50 text-zinc-700 cursor-not-allowed' : 'bg-zinc-800 hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500'}`} title="Move Down"><i className="fas fa-arrow-down text-xs"></i></button>
+                                            <div className="w-px h-8 bg-zinc-800 mx-1"></div>
+                                            <button onClick={() => openEditModal('education', idx, edu, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700 transition-all" title="Edit"><i className="fas fa-edit text-xs"></i></button>
+                                            <button onClick={() => handleDelete('education', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700 transition-all" title="Delete"><i className="fas fa-trash text-xs"></i></button>
                                         </div>
                                     )}
                                     <div className="flex justify-between mb-4 pr-12">
@@ -209,8 +228,11 @@ const ExpEducation = () => {
                                 <div key={`${doc._id}-exp-${idx}`} className="card p-6 border-l-4 border-l-cyan-500 relative group bg-zinc-900/50 hover:bg-zinc-900 transition-all rounded-xl border border-zinc-800">
                                     {isAdmin && (
                                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openEditModal('experience', idx, exp, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700"><i className="fas fa-edit text-xs"></i></button>
-                                            <button onClick={() => handleDelete('experience', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700"><i className="fas fa-trash text-xs"></i></button>
+                                            <button onClick={() => moveItem('experience', idx, -1, doc._id)} disabled={idx === 0} className={`w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-700 transition-all ${idx === 0 ? 'bg-zinc-900/50 text-zinc-700 cursor-not-allowed' : 'bg-zinc-800 hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500'}`} title="Move Up"><i className="fas fa-arrow-up text-xs"></i></button>
+                                            <button onClick={() => moveItem('experience', idx, 1, doc._id)} disabled={idx === doc.experience.length - 1} className={`w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-700 transition-all ${idx === doc.experience.length - 1 ? 'bg-zinc-900/50 text-zinc-700 cursor-not-allowed' : 'bg-zinc-800 hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500'}`} title="Move Down"><i className="fas fa-arrow-down text-xs"></i></button>
+                                            <div className="w-px h-8 bg-zinc-800 mx-1"></div>
+                                            <button onClick={() => openEditModal('experience', idx, exp, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-500 border border-zinc-700 transition-all" title="Edit"><i className="fas fa-edit text-xs"></i></button>
+                                            <button onClick={() => handleDelete('experience', idx, doc._id)} className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center hover:bg-red-500/20 text-zinc-400 hover:text-red-500 border border-zinc-700 transition-all" title="Delete"><i className="fas fa-trash text-xs"></i></button>
                                         </div>
                                     )}
                                     <div className="flex justify-between mb-4 pr-12">
