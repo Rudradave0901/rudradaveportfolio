@@ -1,5 +1,6 @@
 import './css/Resume.css'
 import { useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import useResume from '../hooks/useResume';
 import { useResumeDownload } from '../hooks/useResumeDownload';
 import ActiveResumeContent from '../components/ResumeTemplates/ActiveResumeContent';
@@ -7,7 +8,11 @@ import ActiveResumeContent from '../components/ResumeTemplates/ActiveResumeConte
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
 const Resume = () => {
-    const { resumeData, loading, error } = useResume();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get('id');
+
+    const { resumeData, loading, error } = useResume(true, id);
     const resumeRef = useRef(null);
     const { isExporting, handleDownloadPDF, handleDownloadImage } = useResumeDownload(resumeRef, resumeData);
 
@@ -26,9 +31,9 @@ const Resume = () => {
             <div className="resume-container-main">
                 <div className="container">
                     <div className="resume-export-controls" style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'flex-end', paddingTop: '20px' }}>
-                        <a
-                            href={`${BASE_URL}/api/resume/Rudra_Dave_Resume.pdf`}
-                            target="_blank"
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={isExporting}
                             style={{
                                 padding: '8px 16px',
                                 backgroundColor: '#0097CD',
@@ -37,11 +42,12 @@ const Resume = () => {
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontWeight: 'bold',
-                                display: 'inline-block'
+                                display: 'inline-block',
+                                border: 'none'
                             }}
                         >
-                            Download PDF
-                        </a>
+                            {isExporting ? 'Generating PDF...' : 'Download PDF'}
+                        </button>
                         <button
                             onClick={handleDownloadImage}
                             disabled={isExporting}

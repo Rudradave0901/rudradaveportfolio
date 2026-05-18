@@ -231,6 +231,7 @@
 
 /* RESET & CORE WRAPPER */
 .res-container {
+  position: relative;
   margin: 0 auto;
   background: #ffffff;
   color: #334155;
@@ -250,7 +251,7 @@
   padding-bottom: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .res-title h1 {
@@ -526,3 +527,25 @@
 .resume-page-parent .resume-page + .resume-page {
   border-top: 3px solid #e2e8f0;
 }
+
+.in-progress-badge {
+  z-index: 1;
+}
+
+.in-progress-badge::after {
+  position: absolute;
+  content: '';
+  height: 100%;
+  width: 100%;
+  border-radius: 50px;
+  background: #e2e8f0;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.pdf-export .in-progress-badge::after {
+  top: 7px;
+}
+
+.res-container:not(:first-child).res-page > section > .res-section-head { margin-top: 0; }

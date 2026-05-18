@@ -1,20 +1,21 @@
 import express from "express";
-import { createResume, deleteResume, getResume, updateResume, uploadResumePDF, downloadResumePDF } from "../controllers/Resume.controller.js";
+import { createResume, deleteResume, getResume, getAllResumes, updateResume, uploadResumePDF, downloadResumePDF } from "../controllers/Resume.controller.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
 // ADMIN
-router.post("/", protect, authorize("admin"), createResume)
+router.post("/", protect, authorize("admin"), createResume);
 
-// PUBLIC (Now Protected for Viewer/Admin as per RBAC requirement)
-router.get("/", getResume)
+// PUBLIC
+router.get("/", getResume);
+router.get("/all", getAllResumes);
 
 // DELETE
-router.delete("/", protect, authorize("admin"), deleteResume)
+router.delete("/:id", protect, authorize("admin"), deleteResume);
 
-router.put("/", protect, authorize("admin"), updateResume);
+router.put("/:id", protect, authorize("admin"), updateResume);
 
 // PDF UPLOAD
 router.post("/upload-pdf", protect, authorize("admin"), upload.single("resume"), uploadResumePDF);

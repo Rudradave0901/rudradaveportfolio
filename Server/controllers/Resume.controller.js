@@ -9,11 +9,8 @@ import path from "path";
    CREATE RESUME (ADMIN)
 ========================= */
 export const createResume = asyncHandler(async (req, res) => {
-  // Only one resume allowed (like banner)
-  const existingResume = await ResumeModel.findOne();
-
-  if (existingResume) {
-    throw new ApiError(400, "Resume already exists");
+  if (req.body.isActive) {
+    await ResumeModel.updateMany({}, { isActive: false });
   }
 
   const resume = await ResumeModel.create(req.body);
@@ -27,7 +24,13 @@ export const createResume = asyncHandler(async (req, res) => {
    GET RESUME (PUBLIC)
 ========================= */
 export const getResume = asyncHandler(async (req, res) => {
-  const resume = await ResumeModel.findOne({ isActive: true }).lean();
+  const { id } = req.query;
+  let query = id ? { _id: id } : { isActive: true };
+  let resume = await ResumeModel.findOne(query).lean();
+
+  if (!resume && !id) {
+    resume = await ResumeModel.findOne().lean(); // Fallback to any resume if no active one
+  }
 
   if (!resume) {
     throw new ApiError(404, "Resume not found");
@@ -43,22 +46,56 @@ export const getResume = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, resume, "Resume fetched successfully"));
 });
 
-export const deleteResume = asyncHandler(async (req, res) => {
-  const existingResume = await ResumeModel.findOne();
-
-  if (!existingResume) {
-    throw new ApiError(404, "No data found in Resume");
-  }
-
-  await ResumeModel.deleteOne();
+export const getAllResumes = asyncHandler(async (req, res) => {
+  const resumes = await ResumeModel.find().select('title isActive createdAt').lean();
+  
   return res
     .status(200)
-    .json(new ApiResponse(200, null, "Resume Data deleted successfully"));
+    .json(new ApiResponse(200, resumes, "Resumes fetched successfully"));
+});
+
+export const deleteResume = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  
+  if (!id) {
+    throw new ApiError(400, "Resume ID is required");
+  }
+
+  const existingResume = await ResumeModel.findById(id);
+
+  if (!existingResume) {
+    throw new ApiError(404, "Resume not found");
+  }
+
+  await ResumeModel.findByIdAndDelete(id);
+  
+  // If we deleted the active one, make the most recent one active
+  if (existingResume.isActive) {
+    const latest = await ResumeModel.findOne().sort({ createdAt: -1 });
+    if (latest) {
+      latest.isActive = true;
+      await latest.save();
+    }
+  }
+  
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Resume deleted successfully"));
 });
 
 export const updateResume = asyncHandler(async (req, res) => {
-  const updatedResume = await ResumeModel.findOneAndUpdate(
-    {},
+  const { id } = req.params;
+  
+  if (!id) {
+    throw new ApiError(400, "Resume ID is required for update");
+  }
+
+  if (req.body.isActive) {
+    await ResumeModel.updateMany({ _id: { $ne: id } }, { isActive: false });
+  }
+
+  const updatedResume = await ResumeModel.findByIdAndUpdate(
+    id,
     req.body,
     {
       new: true,

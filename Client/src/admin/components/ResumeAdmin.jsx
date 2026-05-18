@@ -10,7 +10,7 @@ import '../../pages/css/Resume.css';
 const ResumeAdmin = () => {
   const { user } = useAuth();
   const isAdmin = checkIsAdmin(user);
-  const { resumeData, loading, error, updateResume, createResume, setResumeData } = useResume();
+  const { resumeData, resumesList, fetchResume, loading, error, updateResume, createResume, setResumeData, deleteResume } = useResume(true, null);
   const [activeTab, setActiveTab] = useState("header");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -126,7 +126,54 @@ const ResumeAdmin = () => {
           <div className="flex items-center gap-4">
             <div>
               <h2 className="text-3xl font-bold text-white">Resume Designer</h2>
-              <p className="text-zinc-500 mt-1">Refine your professional narrative across all sections.</p>
+              <div className="flex items-center gap-4 mt-2">
+                <select
+                  value={resumeData?._id || ''}
+                  onChange={(e) => fetchResume(e.target.value)}
+                  className="bg-zinc-800 border border-zinc-700 text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-cyan-500 transition-all font-semibold text-sm"
+                >
+                  <option value="" disabled>Select Resume Variant</option>
+                  {resumesList.map(r => (
+                    <option key={r._id} value={r._id}>
+                      {r.title} {r.isActive ? '(Active)' : ''}
+                    </option>
+                  ))}
+                </select>
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        const title = prompt("Enter title for new resume variant:");
+                        if (title) {
+                          const newResume = { ...resumeData, title, isActive: false };
+                          delete newResume._id;
+                          delete newResume.createdAt;
+                          delete newResume.updatedAt;
+                          delete newResume.__v;
+                          await createResume(newResume);
+                        }
+                      }}
+                      className="text-xs font-bold text-cyan-500 hover:text-cyan-400 transition-colors border border-cyan-500/30 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                    >
+                      + Clone Variant
+                    </button>
+                    {resumeData?._id && resumesList.length > 1 && (
+                      <button
+                        onClick={async () => {
+                          if (window.confirm(`Are you sure you want to delete "${resumeData.title}"?`)) {
+                            await deleteResume(resumeData._id);
+                            // Fetch the default one after deletion
+                            fetchResume();
+                          }
+                        }}
+                        className="text-xs font-bold text-red-500 hover:text-red-400 transition-colors border border-red-500/30 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
             {!isAdmin && (
               <div className="px-4 py-1.5 bg-zinc-800 text-zinc-400 text-xs font-bold uppercase tracking-widest rounded-full border border-zinc-700">
@@ -176,6 +223,28 @@ const ResumeAdmin = () => {
 
             {activeTab === 'header' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <FormInput
+                    label="Variant Title (Internal)"
+                    value={resumeData?.title}
+                    onChange={(v) => isAdmin && setResumeData({ ...resumeData, title: v })}
+                    readOnly={!isAdmin}
+                  />
+                  <div className="flex items-center gap-2 mt-8">
+                    <input 
+                      type="checkbox" 
+                      id="isActive"
+                      checked={resumeData?.isActive || false}
+                      onChange={(e) => isAdmin && setResumeData({ ...resumeData, isActive: e.target.checked })}
+                      disabled={!isAdmin}
+                      className="w-4 h-4 rounded border-zinc-800 bg-zinc-900 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-zinc-950"
+                    />
+                    <label htmlFor="isActive" className="text-sm font-bold text-zinc-300 cursor-pointer">
+                      Make Primary (Active) Resume
+                    </label>
+                  </div>
+                </div>
+
                 <div className="p-6 rounded-2xl bg-zinc-950 border border-zinc-800">
                   <label className="block text-xs font-bold text-cyan-500 uppercase tracking-widest mb-4">Active Resume Design</label>
                   <div className="flex items-center gap-4">
@@ -642,7 +711,7 @@ const ResumeAdmin = () => {
                                 }}
                                 readOnly={!isAdmin}
                                 className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-300 ${isAdmin ? 'focus:border-cyan-500' : ''} focus:outline-none`}
-                                placeholder="Describe a feature, task, or outcome..."
+                                placeholder="Describe a feature... Use [Text](https://url.com) for links"
                               />
                               {isAdmin && (
                                 <button

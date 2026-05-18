@@ -1,17 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
 
-const useResume = (fetchOnMount = true) => {
+const useResume = (fetchOnMount = true, initialId = null) => {
     const [resumeData, setResumeData] = useState(null);
+    const [resumesList, setResumesList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchResume = useCallback(async () => {
+    const fetchResumesList = useCallback(async () => {
+        try {
+            const response = await axiosInstance.get("/resume/all");
+            if (response.data?.data) {
+                setResumesList(response.data.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch resumes list:", err);
+        }
+    }, []);
+
+    const fetchResume = useCallback(async (id = null) => {
         setLoading(true);
         setError(null);
 
         try {
-            const response = await axiosInstance.get("/resume");
+            const url = id ? `/resume?id=${id}` : "/resume";
+            const response = await axiosInstance.get(url);
 
             if (!response.data?.data) {
                 setResumeData(null);
@@ -33,8 +46,9 @@ const useResume = (fetchOnMount = true) => {
         setLoading(true);
         try {
             const response = await axiosInstance.post("/resume", data);
-            await fetchResume();
-            return { success: true, message: response.data.message };
+            setResumeData(response.data.data);
+            await fetchResumesList();
+            return { success: true, message: response.data.message, data: response.data.data };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to create resume";
             setError(message);
@@ -47,8 +61,9 @@ const useResume = (fetchOnMount = true) => {
     const updateResume = async (data) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.put("/resume", data);
+            const response = await axiosInstance.put(`/resume/${data._id}`, data);
             setResumeData(response.data.data);
+            await fetchResumesList();
             return { success: true, message: response.data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to update resume";
@@ -59,11 +74,14 @@ const useResume = (fetchOnMount = true) => {
         }
     };
 
-    const deleteResume = async () => {
+    const deleteResume = async (id) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.delete("/resume");
-            setResumeData(null);
+            const response = await axiosInstance.delete(`/resume/${id}`);
+            if (resumeData?._id === id) {
+                setResumeData(null);
+            }
+            await fetchResumesList();
             return { success: true, message: response.data.message };
         } catch (err) {
             const message = err.response?.data?.message || "Failed to delete resume";
@@ -76,15 +94,18 @@ const useResume = (fetchOnMount = true) => {
 
     useEffect(() => {
         if (fetchOnMount) {
-            fetchResume();
+            fetchResume(initialId);
+            fetchResumesList();
         }
-    }, [fetchOnMount, fetchResume]);
+    }, [fetchOnMount, fetchResume, fetchResumesList, initialId]);
 
     return {
         resumeData,
+        resumesList,
         loading,
         error,
         fetchResume,
+        fetchResumesList,
         createResume,
         updateResume,
         deleteResume,

@@ -180,6 +180,11 @@ const ResumeSchema = new mongoose.Schema(
       ],
     },
 
+    title: {
+      type: String,
+      default: "Main Resume",
+    },
+
     templateId: {
       type: String,
       default: "Resume1",

@@ -13,6 +13,23 @@ const DEFAULT_SECTION_ORDER = [
     'skills', 'projects', 'achievements',
 ];
 
+const renderPoint = (text) => {
+    if (!text) return null;
+    const parts = text.split(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g);
+    const result = [];
+    for (let i = 0; i < parts.length; i += 3) {
+        if (parts[i]) result.push(parts[i]);
+        if (i + 1 < parts.length && i + 2 < parts.length) {
+            result.push(
+                <a key={`l-${i}`} href={parts[i+2]} target="_blank" rel="noreferrer" style={{ color: '#0097CD', textDecoration: 'underline', fontWeight: '500' }}>
+                    {parts[i+1]}
+                </a>
+            );
+        }
+    }
+    return result.length > 0 ? result : text;
+};
+
 const Resume1 = React.forwardRef(({ resumeData }, ref) => {
     if (!resumeData) return null;
 
@@ -78,7 +95,7 @@ const Resume1 = React.forwardRef(({ resumeData }, ref) => {
                             {job.points.map((point, i) => (
                                 <li key={i}>
                                     <img src="/images/icons/mark-icon.svg" alt="Mark Icon" height={15} width={15} />
-                                    {point}
+                                    {renderPoint(point)}
                                 </li>
                             ))}
                         </ul>
@@ -102,7 +119,7 @@ const Resume1 = React.forwardRef(({ resumeData }, ref) => {
                             {(proj.points || []).map((point, i) => (
                                 <li key={i}>
                                     <img src="/images/icons/mark-icon.svg" alt="Mark Icon" height={15} width={15} />
-                                    {point}
+                                    {renderPoint(point)}
                                 </li>
                             ))}
                         </ul>
@@ -197,16 +214,7 @@ const Resume1 = React.forwardRef(({ resumeData }, ref) => {
                         </div>
                     ))}
 
-                    {softSkills?.length > 0 && (
-                        <div className="skill-group">
-                            <div className="sidePanel-content-title">Soft Skills</div>
-                            <ul className="skill-tags">
-                                {softSkills.map((skill, i) => (
-                                    <li className="skill-tag" key={i}>{skill}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+
                 </div>
 
                 {languages?.length > 0 && (

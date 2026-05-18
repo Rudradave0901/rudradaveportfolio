@@ -478,7 +478,7 @@ const Projects = () => {
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
-                      placeholder="Short description of the project..."
+                      placeholder="Short description... Use [Text](https://url.com) for links"
                       rows="3"
                       className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all resize-none"
                     />

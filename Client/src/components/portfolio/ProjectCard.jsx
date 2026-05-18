@@ -28,7 +28,22 @@ const ProjectCard = ({ project }) => {
                 </h3>
 
                 <p className="text-zinc-400 text-sm line-clamp-2 mb-4">
-                    {project.description || "A professional project built with modern technologies."}
+                    {project.description ? (() => {
+                        const text = project.description;
+                        const parts = text.split(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g);
+                        const result = [];
+                        for (let i = 0; i < parts.length; i += 3) {
+                            if (parts[i]) result.push(parts[i]);
+                            if (i + 1 < parts.length && i + 2 < parts.length) {
+                                result.push(
+                                    <a key={`l-${i}`} href={parts[i+2]} target="_blank" rel="noreferrer" style={{ color: '#0ea5e9', textDecoration: 'underline', fontWeight: '500' }}>
+                                        {parts[i+1]}
+                                    </a>
+                                );
+                            }
+                        }
+                        return result;
+                    })() : "A professional project built with modern technologies."}
                 </p>
 
                 {/* Stack Tags */}
