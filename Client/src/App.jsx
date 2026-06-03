@@ -40,7 +40,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/resume" element={<Resume />} />
-          <Route path="/googledoc" element={<GoogleDoc />} />
+          <Route path="/secrate" element={<GoogleDoc />} />
           <Route path="/schedule" element={<DaySchedule />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/login" element={<Login />} />
